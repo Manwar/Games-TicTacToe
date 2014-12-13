@@ -1,6 +1,6 @@
 Revision history for Games-TicTacToe
 
-0.06    Fri Dec 12 18:18:18 2014
+0.06    Sat Dec 13 00:05:18 2014
         - Re-structured the code using 'Moo' i.e. downgraded from 'Mouse'.
         - Updated awkward game mode.
         - Added package Games::TicTacToe::Params to support common data types.
