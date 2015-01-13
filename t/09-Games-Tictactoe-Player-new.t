@@ -1,5 +1,6 @@
-﻿#!perl
+#!perl
 
+use 5.006;
 use strict; use warnings;
 use Games::TicTacToe::Player;
 use Test::More tests => 2;

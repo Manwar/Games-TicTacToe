@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.06';
+$Games::TicTacToe::Board::VERSION = '0.07';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.06
+Version 0.07
 
 =cut
 
@@ -199,8 +199,10 @@ L<http://search.cpan.org/dist/Games-TicTacToe/>
 
 =head1 LICENSE AND COPYRIGHT
 
-This  program  is  free software; you can redistribute it and/or modify it under
-the  terms  of the the Artistic License (2.0). You may obtain a copy of the full
+Copyright (C) 2011 - 2015 Mohammad S Anwar.
+
+This  program  is  free software;  you can redistribute it and/or modify it under
+the  terms  of the the Artistic  License (2.0). You may obtain a copy of the full
 license at:
 
 L<http://www.perlfoundation.org/artistic_license_2_0>
