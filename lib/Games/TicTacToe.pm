@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.07';
+$Games::TicTacToe::VERSION = '0.08';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (3x3) game.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
@@ -27,11 +27,50 @@ use namespace::clean;
 A console  based TicTacToe game to  play against the computer. A simple TicTacToe
 layer supplied with the distribution in the script sub folder.
 
-=cut
+=head1 SYNOPSIS
 
-$SIG{'INT'} = sub {
-    print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1);
-};
+Below is the working code  for  the  TicTacToe game using the L<Games::TicTacToe>
+package. The game script C<play-tictactoe> is supplied with the distribution  and
+on install is available to play with.
+
+    use strict; use warnings;
+    use Games::TicTacToe;
+
+    $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
+
+    my $response = 'Y';
+    while (defined($response)) {
+        if ($response =~ /^Y$/i) {
+            my $tictactoe = Games::TicTacToe->new;
+            print {*STDOUT} $tictactoe->getGameBoard()
+            $tictactoe->addPlayer();
+            my $index = 1;
+            while (!$tictactoe->isGameOver()) {
+                $tictactoe->play();
+                print {*STDOUT} $tictactoe->getGameBoard() if ($index % 2 == 0);
+                $index++;
+            }
+
+            print {*STDOUT} "Do you wish to continue (Y/N)? ";
+            $response = <STDIN>;
+            chomp($response);
+        }
+        elsif ($response =~ /^N$/i) {
+            print {*STDOUT} "Thank you.\n";
+            last;
+        }
+        elsif ($response !~ /^[Y|N]$/i) {
+            print {*STDOUT} "Invalid response, please enter (Y/N): ";
+            $response = <STDIN>;
+            chomp($response);
+        }
+    }
+
+Once it is installed, it can be played on a terminal/command window  as below:
+
+    $ play-tictactoe
+
+=cut
 
 has 'board'   => (is => 'rw', isa => $Board,  default => sub { return Games::TicTacToe::Board->new; } );
 has 'current' => (is => 'rw', isa => $Player, default => sub { return 'H'; });
@@ -81,8 +120,10 @@ sub addPlayer {
     }
 
     my ($type, $symbol);
-    print {*STDOUT} "Please select the player [H - Human, C - Computer]: ";
-    $type = <STDIN>;
+    # Don't ask, it is irrelevant.
+    #print {*STDOUT} "Please select the player [H - Human, C - Computer]: ";
+    #$type = <STDIN>;
+    $type = 'H';
     chomp($type) if defined $type;
     $type = _validate_player_type($type);
     print {*STDOUT} "Please select the symbol [X / O]: ";
@@ -94,7 +135,7 @@ sub addPlayer {
     push @{$self->{players}}, Games::TicTacToe::Player->new(type => $type, symbol => $symbol);
 
     # Player 2
-    $type   = ($type eq 'H')?('C'):('H');
+    $type   = ($type   eq 'H')?('C'):('H');
     $symbol = ($symbol eq 'X')?('O'):('X');
     push @{$self->{players}}, Games::TicTacToe::Player->new(type => $type, symbol => $symbol);
 }

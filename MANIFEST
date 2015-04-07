@@ -9,7 +9,7 @@ lib/Games/TicTacToe/Board.pm
 lib/Games/TicTacToe/Move.pm
 lib/Games/TicTacToe/Player.pm
 lib/Games/TicTacToe/Params.pm
-script/tictactoe.pl
+script/play-tictactoe
 t/00-load.t
 t/01-Games-Tictactoe-new.t
 t/02-Games-Tictactoe-addPlayer.t

@@ -1,6 +1,6 @@
 package Games::TicTacToe::Player;
 
-$Games::TicTacToe::Player::VERSION = '0.07';
+$Games::TicTacToe::Player::VERSION = '0.08';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Player - Interface to the TicTacToe game's player.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 

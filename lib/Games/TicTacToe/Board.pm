@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.07';
+$Games::TicTacToe::Board::VERSION = '0.08';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.07
+Version 0.08
 
 =cut
 
@@ -22,7 +22,7 @@ our $EMPTY = '\d';
 
 =head1 DESCRIPTION
 
-The module used by the parent module Games::TicTacToe.
+It is used internally by L<Games::TicTacToe>.
 
 =cut
 
