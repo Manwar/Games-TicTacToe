@@ -1,6 +1,6 @@
 package Games::TicTacToe::Move;
 
-$Games::TicTacToe::Move::VERSION = '0.08';
+$Games::TicTacToe::Move::VERSION = '0.09';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Move - Interface to the TicTacToe game's move.
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
@@ -19,17 +19,6 @@ use Data::Dumper;
 $SIG{'INT'} = sub {
     print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1);
 };
-
-our $BEST_MOVE    = [4, 0, 2, 6, 8];
-our $WINNING_MOVE = [ [0, 1, 2],
-                      [0, 3, 6],
-                      [0, 4, 8],
-                      [1, 4, 7],
-                      [2, 5, 8],
-                      [2, 4, 6],
-                      [3, 4, 5],
-                      [6, 7, 8],
-                    ];
 
 =head1 DESCRIPTION
 
@@ -49,6 +38,8 @@ sub foundWinner {
     die("ERROR: Player not defined.\n") unless defined $player;
     die("ERROR: Board not defined.\n")  unless defined $board;
 
+    my $size = sqrt($board->_getSize());
+    my $WINNING_MOVE = _winning_moves($size);
     foreach my $move (@$WINNING_MOVE) {
         return 1 if $board->_belongsToPlayer($move, $player);
     }
@@ -88,6 +79,43 @@ sub _humanMove {
     return _validate_human_move($board);
 }
 
+sub _best_moves {
+    my ($size) = @_;
+
+    my $moves = [];
+    if ($size % 2 == 0) {
+        foreach my $i (1..($size-2)) {
+            push @$moves, (($i*$size)+($i+1)-1);
+        }
+        foreach my $i (1..($size-2)) {
+            push @$moves, ((($i+1)*$size)-$i)-1;
+        }
+        push @$moves, (0,$size-1,(($size*($size-1)+1))-1,($size*$size)-1);
+    }
+    elsif ($size % 2 == 1) {
+        my $c = int($size / 2) + 1;
+        my $k = ($size*$c)-($c-1);
+
+        push @$moves, ($k-1);
+        push @$moves, (0,$size-1,(($size*$size)-($size-1))-1,($size*$size)-1);
+
+        if ($size > 3) {
+            foreach my $i (1..($c-2)) {
+                push @$moves, ($k-(($i*$size)+$i))-1;
+                push @$moves, ($k-(($i*$size)-$i))-1;
+            }
+            my $j = 1;
+            foreach my $i (($c+1)..($size-1)) {
+                push @$moves, ($k+(($j*$size)+$j))-1;
+                push @$moves, ($k+(($j*$size)-$j))-1;
+                $j++;
+            }
+        }
+    }
+
+    return $moves;
+}
+
 sub _computerMove {
     my ($board, $player) = @_;
 
@@ -96,11 +124,13 @@ sub _computerMove {
     my $move = _getBestMove($board, $player);
     return $move unless ($move == -1);
 
+    my $size = sqrt($board->_getSize());
+    my $BEST_MOVE = _best_moves($size);
     foreach (@$BEST_MOVE) {
         return $_ if $board->_isCellEmpty($_);
     }
 
-    foreach (0..8) {
+    foreach (0..($board->_getSize()-1)) {
         return $_ if $board->_isCellEmpty($_);
     }
 }
@@ -113,24 +143,70 @@ sub _getBestMove {
     return _isWinningMove($board, $player->otherSymbol());
 }
 
+sub _winning_moves {
+    my ($size) = @_;
+
+    my $moves = [];
+
+    # Horizontal
+    my $_moves = [];
+    my $k = 0;
+    foreach my $i (1..$size) {
+        $_moves = [];
+        foreach my $j (1..$size) {
+            push @$_moves, $k++;
+        }
+        push @$moves, $_moves;
+    }
+
+    # Vertical
+    foreach my $i (1..$size) {
+        $_moves = [];
+        $k = 0;
+        foreach my $j (1..$size) {
+            push @$_moves, ($i+($size*$k))-1;
+            $k++;
+        }
+        push @$moves, $_moves;
+    }
+
+    # Diagonal (left to right)
+    $_moves = [];
+    my $j = 1;
+    foreach my $i (0..$size-1) {
+        push @$_moves, ($j+($i*$size))-1;
+        $j++;
+    }
+    push @$moves, $_moves;
+
+    # Diagonal (right to left)
+    $_moves = [];
+    $j = 0;
+    foreach my $i (1..$size) {
+        push @$_moves, (($i*$size)-$j)-1;
+        $j++;
+    }
+    push @$moves, $_moves;
+
+    return $moves;
+}
+
 sub _isWinningMove {
     my ($board, $symbol) = @_;
 
-    foreach (@{$WINNING_MOVE}) {
-        return $_->[0]
-            if ($board->_isCellEmpty($_->[0])
-                && $board->_cellContains($_->[1], $symbol)
-                && $board->_cellContains($_->[2], $symbol));
-
-        return $_->[1]
-            if ($board->_isCellEmpty($_->[1])
-                && $board->_cellContains($_->[0], $symbol)
-                && $board->_cellContains($_->[2], $symbol));
-
-        return $_->[2]
-            if ($board->_isCellEmpty($_->[2])
-                && $board->_cellContains($_->[0], $symbol)
-                && $board->_cellContains($_->[1], $symbol));
+    my $size = sqrt($board->_getSize());
+    my $WINNING_MOVE = _winning_moves($size);
+    foreach my $m (@{$WINNING_MOVE}) {
+        foreach my $i (0..($size-1)) {
+            if ($board->_isCellEmpty($m->[$i])) {
+                my $matched = 1;
+                foreach my $j (0..($size-1)) {
+                    next if ($i == $j);
+                    $matched = 0 unless ($board->_cellContains($m->[$j], $symbol));
+                }
+                return $m->[$i] if ($matched);
+            }
+        }
     }
 
     return -1;
@@ -153,8 +229,8 @@ sub _validate_move {
     die("ERROR: Board not defined.\n") unless defined $board;
 
     while (!(defined($move)
-             && ($move =~ /^[1-9]$/)
-             && ($move >= 1) && ($move <= 9)
+             && ($move =~ /^\d+$/)
+             && ($move >= 1) && ($move <= $board->_getSize())
              && ($board->_isCellEmpty($move-1)))) {
         print {*STDOUT} "Please make a valid move [".$board->_availableIndex()."]: ";
         $move = <STDIN>;

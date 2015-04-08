@@ -1,14 +1,14 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.08';
+$Games::TicTacToe::VERSION = '0.09';
 
 =head1 NAME
 
-Games::TicTacToe - Interface to the TicTacToe (3x3) game.
+Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
@@ -25,7 +25,22 @@ use namespace::clean;
 =head1 DESCRIPTION
 
 A console  based TicTacToe game to  play against the computer. A simple TicTacToe
-layer supplied with the distribution in the script sub folder.
+layer supplied with the distribution in the script sub folder.  Board arranged as
+nxn, where n >=3. For example 5x5 would be something like below:
+
+    +------------------------+
+    |       TicTacToe        |
+    +----+----+----+----+----+
+    | 1  | 2  | 3  | 4  | 5  |
+    +----+----+----+----+----+
+    | 6  | 7  | 8  | 9  | 10 |
+    +----+----+----+----+----+
+    | 11 | 12 | 13 | 14 | 15 |
+    +----+----+----+----+----+
+    | 16 | 17 | 18 | 19 | 20 |
+    +----+----+----+----+----+
+    | 21 | 22 | 23 | 24 | 25 |
+    +----+----+----+----+----+
 
 =head1 SYNOPSIS
 
@@ -38,10 +53,17 @@ on install is available to play with.
 
     $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
+    my $size = 0;
+    do {
+        print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
+        $size = <STDIN>;
+        chomp($size);
+}   while ($size < 3);
+
     my $response = 'Y';
     while (defined($response)) {
         if ($response =~ /^Y$/i) {
-            my $tictactoe = Games::TicTacToe->new;
+            my $tictactoe = Games::TicTacToe->new(size => $size);
             print {*STDOUT} $tictactoe->getGameBoard()
             $tictactoe->addPlayer();
             my $index = 1;
@@ -72,9 +94,18 @@ Once it is installed, it can be played on a terminal/command window  as below:
 
 =cut
 
-has 'board'   => (is => 'rw', isa => $Board,  default => sub { return Games::TicTacToe::Board->new; } );
+has 'board'   => (is => 'rw', isa => $Board);
 has 'current' => (is => 'rw', isa => $Player, default => sub { return 'H'; });
 has 'players' => (is => 'rw', isa => $Players);
+has 'size'    => (is => 'ro', default => sub { return 3 });
+
+sub BUILD {
+    my ($self) = @_;
+
+    my $size = $self->size;
+    my $cell = [ map { $_ } (1..($size*$size)) ];
+    $self->board(Games::TicTacToe::Board->new(cell => $cell));
+}
 
 =head1 METHODS
 
@@ -85,7 +116,7 @@ Returns game board for TicTacToe (3x3) as of now.
     use strict; use warnings;
     use Games::TicTacToe;
 
-    my $tictactoe = Games::TicTacToe->new();
+    my $tictactoe = Games::TicTacToe->new;
     print $tictactoe->getGameBoard();
 
 =cut
@@ -106,13 +137,13 @@ automatically selects the other player/symbol.
     use strict; use warnings;
     use Games::TicTacToe;
 
-    my $tictactoe = Games::TicTacToe->new();
-    $tictactoe->addPlayer();
+    my $tictactoe = Games::TicTacToe->new;
+    $tictactoe->addPlayer;
 
 =cut
 
 sub addPlayer {
-    my $self = shift;
+    my ($self) = @_;
 
     if (defined($self->{players}) && (scalar(@{$self->{players}}) == 2)) {
         warn("WARNING: We already have 2 players to play the TicTacToe game.");
@@ -147,9 +178,9 @@ Returns the players information with their symbol.
     use strict; use warnings;
     use Games::TicTacToe;
 
-    my $tictactoe = Games::TicTacToe->new();
-    $tictactoe->addPlayer();
-    print $tictactoe->getPlayers();
+    my $tictactoe = Games::TicTacToe->new;
+    $tictactoe->addPlayer;
+    print $tictactoe->getPlayers;
 
 =cut
 
@@ -177,9 +208,9 @@ Actually starts the game by prompty player to make a move.
     use strict; use warnings;
     use Games::TicTacToe;
 
-    my $tictactoe = Games::TicTacToe->new();
-    $tictactoe->addPlayer();
-    $tictactoe->play();
+    my $tictactoe = Games::TicTacToe->new;
+    $tictactoe->addPlayer;
+    $tictactoe->play;
 
 =cut
 
@@ -202,10 +233,10 @@ name if any found. It also dumps the message if the games is drawn just in case.
     use strict; use warnings;
     use Games::TicTacToe;
 
-    my $tictactoe = Games::TicTacToe->new();
-    $tictactoe->addPlayer();
-    $tictactoe->play();
-    print "Thank you!!!\n" if $tictactoe->isGameOver();
+    my $tictactoe = Games::TicTacToe->new;
+    $tictactoe->addPlayer;
+    $tictactoe->play;
+    print "Thank you!!!\n" if $tictactoe->isGameOver;
 
 =cut
 

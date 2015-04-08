@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.08';
+$Games::TicTacToe::Board::VERSION = '0.09';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
@@ -39,7 +39,8 @@ Return 1 or 0 depending whether the game board is full or not.
 sub isFull {
     my ($self) = @_;
 
-    foreach (0..8) {
+    my $size = $self->_getSize();
+    foreach (0..($size-1)) {
         return 0 if $self->_isCellEmpty($_);
     }
 
@@ -57,10 +58,15 @@ sub setCell {
 
     die("ERROR: Missing cell index for TicTacToe Board.\n")       unless defined $index;
     die("ERROR: Missing symbol for TicTacToe Board.\n")           unless defined $symbol;
-    die("ERROR: Invalid cell index value for TicTacToe Board.\n") unless ($index  =~ /^[0-8]$/);
     die("ERROR: Invalid symbol for TicTacToe Board.\n")           unless ($symbol =~ /^[X|O]$/i);
 
-    $self->{cell}->[$index] = $symbol;
+    my $size = $self->_getSize();
+    if (($index =~ /^\d*$/) && ($index >= 0) && ($index < $size)) {
+        $self->{cell}->[$index] = $symbol;
+    }
+    else {
+        die("ERROR: Invalid cell index value for TicTacToe Board.\n");
+    }
 }
 
 =head2 getCell()
@@ -73,9 +79,14 @@ sub getCell {
     my ($self, $index) = @_;
 
     die("ERROR: Missing cell index for TicTacToe Board.\n")  unless defined($index);
-    die("ERROR: Invalid index value for TicTacToe Board.\n") unless (($index >= 0) && ($index <= 8));
 
-    return $self->{cell}->[$index];
+    my $size = $self->_getSize();
+    if (($index =~ /^\d*$/) && ($index >= 0) && ($index < $size)) {
+        return $self->{cell}->[$index];
+    }
+    else {
+        die("ERROR: Invalid index value for TicTacToe Board.\n");
+    }
 }
 
 =head2 as_string()
@@ -87,14 +98,27 @@ Returns the current game board.
 sub as_string {
     my ($self) = @_;
 
-    my $board = sprintf("+-----------+\n");
-    $board .= sprintf("| TicTacToe |\n");
-    $board .= sprintf("+---+---+---+\n");
-    foreach my $row (1..3) {
-        foreach my $col (1..3) {
-            $board .= sprintf("| %s ", $self->_getCellRowCol($row, $col));
+    my $size        = sqrt($self->_getSize());
+    my $cell_width  = _cell_width($size);
+    my $table_width = _table_width($size);
+    my $board       = '+'. '-'x($table_width-2). "+\n";
+    $board .= _table_header($size);
+
+     foreach my $col (1..$size) {
+        $board .= sprintf("+%s", '-'x$cell_width);
+    }
+    $board .= "+\n";
+
+    my $i = 0;
+    foreach my $row (1..$size) {
+        foreach my $col (1..$size) {
+            $board .= sprintf("| %-".($cell_width-2)."s ", $self->{cell}->[$i++]);
         }
-        $board .= sprintf("|\n+---+---+---+\n");
+        $board .= "|\n";
+        foreach my $col (1..$size) {
+            $board .= sprintf("+%s", '-'x$cell_width);
+        }
+        $board .= "+\n";
     }
 
     return $board;
@@ -104,15 +128,24 @@ sub as_string {
 #
 # PRIVATE METHODS
 
+sub _getSize {
+    my ($self) = @_;
+
+    return scalar(@{$self->cell});
+}
+
 sub _getCellRowCol {
     my ($self, $row, $col) = @_;
 
     die("ERROR: Missing row/col value for TicTacToe Board.\n")
         unless (defined($row) && defined($col));
-    die("ERROR: Invalid value for row/col for TicTacToe Board.\n")
-        unless (($row >= 1) && ($row <= 3) && ($col >= 1) && ($col <= 3));
 
-    my $index = ($row == 1)?(0):(($row == 2)?(3):(6));
+    my $size = $self->_getSize();
+    die("ERROR: Invalid value for row/col for TicTacToe Board.\n")
+        unless (($row >= 1) && ($row <= $size) && ($col >= 1) && ($col <= $size));
+
+    $size = sqrt($size);
+    my $index = ($row*$size) - $size;
     return $self->getCell(($index+$col)-1);
 }
 
@@ -127,8 +160,9 @@ sub _availableIndex {
     my ($self) = @_;
 
     my $index = '';
-    foreach (1..9) {
-        $index .= $_ . "," if $self->_isCellEmpty($_-1);
+    my $size = $self->_getSize();
+    foreach my $i (1..$size) {
+        $index .= $i . "," if $self->_isCellEmpty($i-1);
     }
     $index =~ s/\,$//g;
 
@@ -138,13 +172,13 @@ sub _availableIndex {
 sub _belongsToPlayer {
     my ($self, $cells, $player) = @_;
 
-    return 1
-        if ($self->_cellContains($cells->[0], $player->symbol)
-            &&
-            $self->_cellContains($cells->[1], $player->symbol)
-            &&
-            $self->_cellContains($cells->[2], $player->symbol));
-    return 0;
+    my $symbol = $player->symbol;
+    my $size   = sqrt($self->_getSize());
+    foreach my $i (0..($size-1)) {
+        return 0 unless ($self->_cellContains($cells->[$i], $symbol));
+    }
+
+    return 1;
 }
 
 sub _cellContains {
@@ -152,6 +186,40 @@ sub _cellContains {
 
     return 1 if ($self->getCell($index) eq $symbol);
     return 0;
+}
+
+sub _cell_width {
+    my ($size) = @_;
+
+    my $len = length($size*$size);
+    return ($len+2);
+}
+
+sub _table_width {
+    my ($size) = @_;
+
+    my $cell_width = _cell_width($size);
+    return ( 1 + ($cell_width * $size) + ($size-1) + 1);
+}
+
+sub _table_header {
+    my ($size) = @_;
+
+    my $table_width = _table_width($size);
+    my $pad_size = $table_width - 9;
+
+    my ($left, $right);
+    if ($pad_size % 2 == 0) {
+        $left = $right = $pad_size / 2;
+    }
+    else {
+        $left = int($pad_size / 2);
+        $right = $left + 1;
+    }
+
+    my $format = "%-".$left."s%s%".$right."s\n";
+
+    return sprintf($format, '|', 'TicTacToe', '|');
 }
 
 =head1 AUTHOR

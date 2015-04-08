@@ -1,5 +1,8 @@
 Revision history for Games-TicTacToe
 
+0.09    Wed Apr 08 04:10:00 2015
+        - Extended the game to nxn (n>=3) for more fun.
+
 0.08    Tue Apr 07 12:20:00 2015
         - Updated Makefile.PL script to install the game script alongwith the package.
         - Updated pod document about the same.

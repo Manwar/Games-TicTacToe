@@ -5,10 +5,18 @@ use Games::TicTacToe;
 
 $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
+my $size = 0;
+do {
+    print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
+    $size = <STDIN>;
+    chomp($size);
+} while ($size < 3);
+
+
 my $response = 'Y';
 while (defined($response)) {
     if ($response =~ /^Y$/i) {
-        my $tictactoe = Games::TicTacToe->new;
+        my $tictactoe = Games::TicTacToe->new(size => $size);
         print {*STDOUT} $tictactoe->getGameBoard();
         $tictactoe->addPlayer();
         my $index = 1;
