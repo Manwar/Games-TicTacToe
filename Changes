@@ -1,5 +1,9 @@
 Revision history for Games-TicTacToe
 
+0.10    Thu Apr 09 11:05:00 2015
+        - Refactored changes done during extending the game.
+        - Tidied up the pod document with regard to the above changes.
+
 0.09    Wed Apr 08 04:10:00 2015
         - Extended the game to nxn (n>=3) for more fun.
 

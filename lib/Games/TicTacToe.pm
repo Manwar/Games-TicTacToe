@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.09';
+$Games::TicTacToe::VERSION = '0.10';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =cut
 
@@ -22,11 +22,16 @@ use Games::TicTacToe::Params qw($Board $Player $Players);
 use Moo;
 use namespace::clean;
 
+has 'board'   => (is => 'rw', isa => $Board);
+has 'current' => (is => 'rw', isa => $Player,  default   => sub { return 'H'; });
+has 'players' => (is => 'rw', isa => $Players, predicate => 1);
+has 'size'    => (is => 'ro', default => sub { return 3 });
+
 =head1 DESCRIPTION
 
 A console  based TicTacToe game to  play against the computer. A simple TicTacToe
 layer supplied with the distribution in the script sub folder.  Board arranged as
-nxn, where n >=3. For example 5x5 would be something like below:
+nxn, where n>=3. Default size is 3,For example 5x5 would be something like below:
 
     +------------------------+
     |       TicTacToe        |
@@ -58,7 +63,7 @@ on install is available to play with.
         print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
         $size = <STDIN>;
         chomp($size);
-}   while ($size < 3);
+    } while ($size < 3);
 
     my $response = 'Y';
     while (defined($response)) {
@@ -94,11 +99,6 @@ Once it is installed, it can be played on a terminal/command window  as below:
 
 =cut
 
-has 'board'   => (is => 'rw', isa => $Board);
-has 'current' => (is => 'rw', isa => $Player, default => sub { return 'H'; });
-has 'players' => (is => 'rw', isa => $Players);
-has 'size'    => (is => 'ro', default => sub { return 3 });
-
 sub BUILD {
     my ($self) = @_;
 
@@ -111,13 +111,16 @@ sub BUILD {
 
 =head2 getGameBoard()
 
-Returns game board for TicTacToe (3x3) as of now.
+Returns game board for TicTacToe (3x3) by default.
 
     use strict; use warnings;
     use Games::TicTacToe;
 
-    my $tictactoe = Games::TicTacToe->new;
-    print $tictactoe->getGameBoard();
+    # TicTacToe Board 3x3
+    print Games::TicTacToe->new->getGameBoard;
+
+    # TicTacToe Board 4x4
+    print Games::TicTacToe->new(size => 4)->getGameBoard;
 
 =cut
 
@@ -129,10 +132,9 @@ sub getGameBoard {
 
 =head2 addPlayer()
 
-Add player to the TicTacToe game. It prompts the  user to pick  the player  from
-Human / Computer. As soon as the user picks one, it then asks to pick the symbol
-for the selected user from X/O. Once  the player and symbol are selected then it
-automatically selects the other player/symbol.
+Add player to the TicTacToe game. It prompts the  user to pick the symbol for the
+selected user from X/O. Once the symbol is selected then it automatically selects
+the other symbol for the opponent.
 
     use strict; use warnings;
     use Games::TicTacToe;
@@ -145,20 +147,15 @@ automatically selects the other player/symbol.
 sub addPlayer {
     my ($self) = @_;
 
-    if (defined($self->{players}) && (scalar(@{$self->{players}}) == 2)) {
+    if (($self->has_players) && (scalar(@{$self->players}) == 2)) {
         warn("WARNING: We already have 2 players to play the TicTacToe game.");
         return;
     }
 
-    my ($type, $symbol);
-    # Don't ask, it is irrelevant.
-    #print {*STDOUT} "Please select the player [H - Human, C - Computer]: ";
-    #$type = <STDIN>;
-    $type = 'H';
-    chomp($type) if defined $type;
+    my $type = 'H';
     $type = _validate_player_type($type);
     print {*STDOUT} "Please select the symbol [X / O]: ";
-    $symbol = <STDIN>;
+    my $symbol = <STDIN>;
     chomp($symbol);
     $symbol = _validate_player_symbol($symbol);
 
@@ -187,7 +184,7 @@ Returns the players information with their symbol.
 sub getPlayers {
     my ($self) = @_;
 
-    if (!defined($self->{players}) || scalar(@{$self->{players}}) == 0) {
+    if (!($self->has_players) || scalar(@{$self->players}) == 0) {
         warn("WARNING: No player found to play the TicTacToe game.");
         return;
     }
@@ -205,23 +202,18 @@ sub getPlayers {
 
 Actually starts the game by prompty player to make a move.
 
-    use strict; use warnings;
-    use Games::TicTacToe;
-
-    my $tictactoe = Games::TicTacToe->new;
-    $tictactoe->addPlayer;
-    $tictactoe->play;
-
 =cut
 
 sub play {
     my ($self) = @_;
 
     die("ERROR: Please add player before you start the game.\n")
-        unless (defined($self->{players}) && scalar(@{$self->{players}}) == 2);
+        unless (($self->has_players) && (scalar(@{$self->players}) == 2));
 
-    my $move = Games::TicTacToe::Move::now($self->_getCurrentPlayer, $self->board);
-    $self->board->setCell($move, $self->_getCurrentPlayer->symbol);
+    my $player = $self->_getCurrentPlayer;
+    my $board  = $self->board;
+    my $move   = Games::TicTacToe::Move::now($player, $board);
+    $board->setCell($move, $player->symbol);
     $self->_resetCurrentPlayer();
 }
 
@@ -230,33 +222,26 @@ sub play {
 Returns 1 or 0 depending whether the TicTacToe is over or not.It dumps the winner
 name if any found. It also dumps the message if the games is drawn just in case.
 
-    use strict; use warnings;
-    use Games::TicTacToe;
-
-    my $tictactoe = Games::TicTacToe->new;
-    $tictactoe->addPlayer;
-    $tictactoe->play;
-    print "Thank you!!!\n" if $tictactoe->isGameOver;
-
 =cut
 
 sub isGameOver {
     my ($self) = @_;
 
-    if (!defined($self->{players}) || scalar(@{$self->{players}}) == 0) {
+    if (!($self->has_players) || scalar(@{$self->players}) == 0) {
         warn("WARNING: No player found to play the TicTacToe game.");
         return;
     }
 
-    foreach my $player (@{$self->{players}}) {
-        if (Games::TicTacToe::Move::foundWinner($player, $self->board)) {
+    my $board = $self->board;
+    foreach my $player (@{$self->players}) {
+        if (Games::TicTacToe::Move::foundWinner($player, $board)) {
             print {*STDOUT} $self->getGameBoard();
             print {*STDOUT} $player->getMessage;
             return 1;
         }
     }
 
-    if ($self->board->isFull()) {
+    if ($board->isFull()) {
         print {*STDOUT} $self->getGameBoard();
         print {*STDOUT} "Game drawn !!!\n";
         return 1;

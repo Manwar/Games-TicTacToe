@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.09';
+$Games::TicTacToe::Board::VERSION = '0.10';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =cut
 
@@ -30,6 +30,18 @@ has 'cell' => (is => 'rw', default => sub { return ['1','2','3','4','5','6','7',
 
 =head1 METHODS
 
+=head2 getSize()
+
+Returns the board size i.e for 3x3 board, the size would be 9.
+
+=cut
+
+sub getSize {
+    my ($self) = @_;
+
+    return scalar(@{$self->cell});
+}
+
 =head2 isFull()
 
 Return 1 or 0 depending whether the game board is full or not.
@@ -39,28 +51,28 @@ Return 1 or 0 depending whether the game board is full or not.
 sub isFull {
     my ($self) = @_;
 
-    my $size = $self->_getSize();
-    foreach (0..($size-1)) {
-        return 0 if $self->_isCellEmpty($_);
+    my $size = $self->getSize;
+    foreach my $i (0..($size-1)) {
+        return 0 if $self->isCellEmpty($i);
     }
 
     return 1;
 }
 
-=head2 setCell()
+=head2 setCell($index, $symbol)
 
-Set the cell with the player symbol.
+Set the cell C<$index> with the player C<$symbol>.
 
 =cut
 
 sub setCell {
     my ($self, $index, $symbol) = @_;
 
-    die("ERROR: Missing cell index for TicTacToe Board.\n")       unless defined $index;
-    die("ERROR: Missing symbol for TicTacToe Board.\n")           unless defined $symbol;
-    die("ERROR: Invalid symbol for TicTacToe Board.\n")           unless ($symbol =~ /^[X|O]$/i);
+    die("ERROR: Missing cell index for TicTacToe Board.\n") unless defined $index;
+    die("ERROR: Missing symbol for TicTacToe Board.\n")     unless defined $symbol;
+    die("ERROR: Invalid symbol for TicTacToe Board.\n")     unless ($symbol =~ /^[X|O]$/i);
 
-    my $size = $self->_getSize();
+    my $size = $self->getSize;
     if (($index =~ /^\d*$/) && ($index >= 0) && ($index < $size)) {
         $self->{cell}->[$index] = $symbol;
     }
@@ -69,9 +81,9 @@ sub setCell {
     }
 }
 
-=head2 getCell()
+=head2 getCell($index)
 
-Get the cell symbol in the given index.
+Get the cell symbol in the given C<$index>.
 
 =cut
 
@@ -80,13 +92,74 @@ sub getCell {
 
     die("ERROR: Missing cell index for TicTacToe Board.\n")  unless defined($index);
 
-    my $size = $self->_getSize();
+    my $size = $self->getSize;
     if (($index =~ /^\d*$/) && ($index >= 0) && ($index < $size)) {
         return $self->{cell}->[$index];
     }
     else {
         die("ERROR: Invalid index value for TicTacToe Board.\n");
     }
+}
+
+=head2 available_index()
+
+Returns comma seperated empty cell indexes.
+
+=cut
+
+sub availableIndex {
+    my ($self) = @_;
+
+    my $index = '';
+    my $size = $self->getSize;
+    foreach my $i (1..$size) {
+        $index .= $i . "," if $self->isCellEmpty($i-1);
+    }
+    $index =~ s/\,$//g;
+
+    return $index;
+}
+
+=head2 isCellEmpty($index)
+
+Returns 1 or 0 depending on if the cell C<$index> is empty.
+
+=cut
+
+sub isCellEmpty {
+    my ($self, $index) = @_;
+
+    return ($self->getCell($index) =~ /$EMPTY/);
+}
+
+=head2 cellContains($index, $symbol)
+
+Returns 0 or 1 depending on if the cell C<$index> contains the C<$symbol>.
+
+=cut
+
+sub cellContains {
+    my ($self, $index, $symbol) = @_;
+
+    return ($self->getCell($index) eq $symbol);
+}
+
+=head2 belongsToPlayer($cells, $player)
+
+Returns 0 or 1 depending on if the C<$cells> belong to C<$player>.
+
+=cut
+
+sub belongsToPlayer {
+    my ($self, $cells, $player) = @_;
+
+    my $symbol = $player->symbol;
+    my $size   = sqrt($self->getSize);
+    foreach my $i (0..($size-1)) {
+        return 0 unless ($self->cellContains($cells->[$i], $symbol));
+    }
+
+    return 1;
 }
 
 =head2 as_string()
@@ -98,13 +171,13 @@ Returns the current game board.
 sub as_string {
     my ($self) = @_;
 
-    my $size        = sqrt($self->_getSize());
+    my $size        = sqrt($self->getSize);
     my $cell_width  = _cell_width($size);
     my $table_width = _table_width($size);
     my $board       = '+'. '-'x($table_width-2). "+\n";
     $board .= _table_header($size);
 
-     foreach my $col (1..$size) {
+    foreach my $col (1..$size) {
         $board .= sprintf("+%s", '-'x$cell_width);
     }
     $board .= "+\n";
@@ -127,66 +200,6 @@ sub as_string {
 #
 #
 # PRIVATE METHODS
-
-sub _getSize {
-    my ($self) = @_;
-
-    return scalar(@{$self->cell});
-}
-
-sub _getCellRowCol {
-    my ($self, $row, $col) = @_;
-
-    die("ERROR: Missing row/col value for TicTacToe Board.\n")
-        unless (defined($row) && defined($col));
-
-    my $size = $self->_getSize();
-    die("ERROR: Invalid value for row/col for TicTacToe Board.\n")
-        unless (($row >= 1) && ($row <= $size) && ($col >= 1) && ($col <= $size));
-
-    $size = sqrt($size);
-    my $index = ($row*$size) - $size;
-    return $self->getCell(($index+$col)-1);
-}
-
-sub _isCellEmpty {
-    my ($self, $index) = @_;
-
-    return 1 if ($self->getCell($index) =~ /$EMPTY/);
-    return 0;
-}
-
-sub _availableIndex {
-    my ($self) = @_;
-
-    my $index = '';
-    my $size = $self->_getSize();
-    foreach my $i (1..$size) {
-        $index .= $i . "," if $self->_isCellEmpty($i-1);
-    }
-    $index =~ s/\,$//g;
-
-    return $index;
-}
-
-sub _belongsToPlayer {
-    my ($self, $cells, $player) = @_;
-
-    my $symbol = $player->symbol;
-    my $size   = sqrt($self->_getSize());
-    foreach my $i (0..($size-1)) {
-        return 0 unless ($self->_cellContains($cells->[$i], $symbol));
-    }
-
-    return 1;
-}
-
-sub _cellContains {
-    my ($self, $index, $symbol) = @_;
-
-    return 1 if ($self->getCell($index) eq $symbol);
-    return 0;
-}
 
 sub _cell_width {
     my ($size) = @_;

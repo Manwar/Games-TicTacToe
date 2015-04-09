@@ -1,6 +1,6 @@
 package Games::TicTacToe::Move;
 
-$Games::TicTacToe::Move::VERSION = '0.09';
+$Games::TicTacToe::Move::VERSION = '0.10';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Move - Interface to the TicTacToe game's move.
 
 =head1 VERSION
 
-Version 0.09
+Version 0.10
 
 =cut
 
@@ -16,17 +16,13 @@ use 5.006;
 use strict; use warnings;
 use Data::Dumper;
 
-$SIG{'INT'} = sub {
-    print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1);
-};
-
 =head1 DESCRIPTION
 
 It is used internally by L<Games::TicTacToe>.
 
 =head1 METHODS
 
-=head2 foundWinner()
+=head2 foundWinner($player, $board)
 
 Return 1 or 0 depending wether we have a winner or not.
 
@@ -38,16 +34,16 @@ sub foundWinner {
     die("ERROR: Player not defined.\n") unless defined $player;
     die("ERROR: Board not defined.\n")  unless defined $board;
 
-    my $size = sqrt($board->_getSize());
-    my $WINNING_MOVE = _winning_moves($size);
-    foreach my $move (@$WINNING_MOVE) {
-        return 1 if $board->_belongsToPlayer($move, $player);
+    my $size = sqrt($board->getSize);
+    my $winning_moves = ___winningMoves($size);
+    foreach my $move (@$winning_moves) {
+        return 1 if $board->belongsToPlayer($move, $player);
     }
 
     return 0;
 }
 
-=head2 now()
+=head2 now($player, $board)
 
 Make a move now for the current player.
 
@@ -74,36 +70,106 @@ sub now {
 sub _humanMove {
     my ($board) = @_;
 
-    die("ERROR: Board not defined.\n") unless defined $board;
+    my $size      = $board->getSize;
+    my $available = $board->availableIndex;
+    print {*STDOUT} "What is your next move [$available] ? ";
+    my $move = <STDIN>;
+    chomp($move);
+    while (!(defined($move)
+             && ($move =~ /^\d+$/)
+             && ($move >= 1) && ($move <= $size)
+             && ($board->isCellEmpty($move-1)))) {
+        print {*STDOUT} "Please make a valid move [$available]: ";
+        $move = <STDIN>;
+        chomp($move);
+    }
 
-    return _validate_human_move($board);
+    return ($move-1);
 }
 
-sub _best_moves {
+sub _computerMove {
+    my ($board, $player) = @_;
+
+    my $move = _getBestMove($board, $player);
+    return $move unless ($move == -1);
+
+    my $size = $board->getSize;
+    my $best_moves = ___bestMoves(sqrt($size));
+    foreach my $i (@$best_moves) {
+        return $i if $board->isCellEmpty($i);
+    }
+
+    foreach my $i (0..($size-1)) {
+        return $i if $board->isCellEmpty($i);
+    }
+}
+
+sub _getBestMove {
+    my ($board, $player) = @_;
+
+    my $move = _isWinningMove($board, $player->symbol);
+    return $move unless ($move == -1);
+    return _isWinningMove($board, $player->otherSymbol());
+}
+
+sub _isWinningMove {
+    my ($board, $symbol) = @_;
+
+    my $size = sqrt($board->getSize);
+    my $winning_moves = ___winningMoves($size);
+    foreach my $m (@{$winning_moves}) {
+        foreach my $i (0..($size-1)) {
+            if ($board->isCellEmpty($m->[$i])) {
+                my $matched = 1;
+                foreach my $j (0..($size-1)) {
+                    next if ($i == $j);
+                    $matched = 0 unless ($board->cellContains($m->[$j], $symbol));
+                }
+                return $m->[$i] if ($matched);
+            }
+        }
+    }
+
+    return -1;
+}
+
+sub ___bestMoves {
     my ($size) = @_;
 
     my $moves = [];
     if ($size % 2 == 0) {
+        # Around the center
         foreach my $i (1..($size-2)) {
             push @$moves, (($i*$size)+($i+1)-1);
         }
         foreach my $i (1..($size-2)) {
             push @$moves, ((($i+1)*$size)-$i)-1;
         }
-        push @$moves, (0,$size-1,(($size*($size-1)+1))-1,($size*$size)-1);
+        # All edge corners
+        push @$moves, (0,
+                       $size-1,
+                       (($size*($size-1)+1))-1,
+                       ($size*$size)-1);
     }
     elsif ($size % 2 == 1) {
         my $c = int($size / 2) + 1;
         my $k = ($size*$c)-($c-1);
 
+        # Center point
         push @$moves, ($k-1);
-        push @$moves, (0,$size-1,(($size*$size)-($size-1))-1,($size*$size)-1);
+        # All edge corners
+        push @$moves, (0,
+                       $size-1,
+                       (($size*$size)-($size-1))-1,
+                       ($size*$size)-1);
 
         if ($size > 3) {
+            # Diagonal (left to right) around the center
             foreach my $i (1..($c-2)) {
                 push @$moves, ($k-(($i*$size)+$i))-1;
                 push @$moves, ($k-(($i*$size)-$i))-1;
             }
+            # Diagonal (right to left) around the center
             my $j = 1;
             foreach my $i (($c+1)..($size-1)) {
                 push @$moves, ($k+(($j*$size)+$j))-1;
@@ -116,34 +182,7 @@ sub _best_moves {
     return $moves;
 }
 
-sub _computerMove {
-    my ($board, $player) = @_;
-
-    die("ERROR: Board not defined.\n") unless defined $board;
-
-    my $move = _getBestMove($board, $player);
-    return $move unless ($move == -1);
-
-    my $size = sqrt($board->_getSize());
-    my $BEST_MOVE = _best_moves($size);
-    foreach (@$BEST_MOVE) {
-        return $_ if $board->_isCellEmpty($_);
-    }
-
-    foreach (0..($board->_getSize()-1)) {
-        return $_ if $board->_isCellEmpty($_);
-    }
-}
-
-sub _getBestMove {
-    my ($board, $player) = @_;
-
-    my $move = _isWinningMove($board, $player->symbol);
-    return $move unless ($move == -1);
-    return _isWinningMove($board, $player->otherSymbol());
-}
-
-sub _winning_moves {
+sub ___winningMoves {
     my ($size) = @_;
 
     my $moves = [];
@@ -189,55 +228,6 @@ sub _winning_moves {
     push @$moves, $_moves;
 
     return $moves;
-}
-
-sub _isWinningMove {
-    my ($board, $symbol) = @_;
-
-    my $size = sqrt($board->_getSize());
-    my $WINNING_MOVE = _winning_moves($size);
-    foreach my $m (@{$WINNING_MOVE}) {
-        foreach my $i (0..($size-1)) {
-            if ($board->_isCellEmpty($m->[$i])) {
-                my $matched = 1;
-                foreach my $j (0..($size-1)) {
-                    next if ($i == $j);
-                    $matched = 0 unless ($board->_cellContains($m->[$j], $symbol));
-                }
-                return $m->[$i] if ($matched);
-            }
-        }
-    }
-
-    return -1;
-}
-
-sub _validate_human_move {
-    my ($board) = @_;
-
-    die("ERROR: Board not defined.\n") unless defined $board;
-
-    print {*STDOUT} "What is your next move [".$board->_availableIndex()."]? ";
-    my $move = <STDIN>;
-    chomp($move);
-    return _validate_move($move, $board);
-}
-
-sub _validate_move {
-    my ($move, $board) = @_;
-
-    die("ERROR: Board not defined.\n") unless defined $board;
-
-    while (!(defined($move)
-             && ($move =~ /^\d+$/)
-             && ($move >= 1) && ($move <= $board->_getSize())
-             && ($board->_isCellEmpty($move-1)))) {
-        print {*STDOUT} "Please make a valid move [".$board->_availableIndex()."]: ";
-        $move = <STDIN>;
-        chomp($move);
-    }
-
-    return ($move-1);
 }
 
 =head1 AUTHOR
