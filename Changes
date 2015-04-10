@@ -1,5 +1,13 @@
 Revision history for Games-TicTacToe
 
+0.11    Fri Apr 10 10:35:00 2015
+        - Updated game script slight to improved the flow.
+        - Updated method addPlayer() to just add player and do nothing.
+        - Updated method isGameOver() to just return 1 or 0 after setting the winner.
+        - Added new method result() to Games::TicTacToe to show the result and game board. Also
+          reset the game board, winner and current player back to original.
+        - Added new method reset() to Games::TicTacToe::Board.
+
 0.10    Thu Apr 09 11:05:00 2015
         - Refactored changes done during extending the game.
         - Tidied up the pod document with regard to the above changes.

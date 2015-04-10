@@ -5,26 +5,38 @@ use Games::TicTacToe;
 
 $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
-my $size = 0;
+my ($size, $symbol);
+
 do {
     print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
     $size = <STDIN>;
     chomp($size);
 } while ($size < 3);
 
+my $tictactoe = Games::TicTacToe->new(size => $size);
+
+do {
+    print {*STDOUT} "Please select the symbol [X / O]: ";
+    $symbol = <STDIN>;
+    chomp($symbol);
+} unless (defined $symbol && ($symbol =~ /^[X|O]$/i));
+
+$tictactoe->addPlayer($symbol);
 
 my $response = 'Y';
 while (defined($response)) {
     if ($response =~ /^Y$/i) {
-        my $tictactoe = Games::TicTacToe->new(size => $size);
-        print {*STDOUT} $tictactoe->getGameBoard();
-        $tictactoe->addPlayer();
+        print {*STDOUT} $tictactoe->getGameBoard;
         my $index = 1;
-        while (!$tictactoe->isGameOver()) {
-            $tictactoe->play();
-            print {*STDOUT} $tictactoe->getGameBoard() if ($index % 2 == 0);
+        while (!$tictactoe->isGameOver) {
+            $tictactoe->play;
+            if (($index % 2 == 0) && !$tictactoe->isGameOver) {
+                print {*STDOUT} $tictactoe->getGameBoard;
+            }
             $index++;
         }
+
+        $tictactoe->result;
 
         print {*STDOUT} "Do you wish to continue (Y/N)? ";
         $response = <STDIN>;

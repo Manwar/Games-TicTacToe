@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.10';
+$Games::TicTacToe::Board::VERSION = '0.11';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =cut
 
@@ -101,7 +101,7 @@ sub getCell {
     }
 }
 
-=head2 available_index()
+=head2 availableIndex()
 
 Returns comma seperated empty cell indexes.
 
@@ -195,6 +195,21 @@ sub as_string {
     }
 
     return $board;
+}
+
+=head2 reset()
+
+Resets the game board back to original state.
+
+=cut
+
+sub reset {
+    my ($self) = @_;
+
+    my $size = $self->getSize;
+    foreach my $i (1..$size) {
+        $self->{cell}->[$i-1] = $i;
+    }
 }
 
 #

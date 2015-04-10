@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.10';
+$Games::TicTacToe::VERSION = '0.11';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =cut
 
@@ -26,6 +26,7 @@ has 'board'   => (is => 'rw', isa => $Board);
 has 'current' => (is => 'rw', isa => $Player,  default   => sub { return 'H'; });
 has 'players' => (is => 'rw', isa => $Players, predicate => 1);
 has 'size'    => (is => 'ro', default => sub { return 3 });
+has 'winner'  => (is => 'rw', predicate => 1, clearer => 1);
 
 =head1 DESCRIPTION
 
@@ -58,25 +59,38 @@ on install is available to play with.
 
     $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
-    my $size = 0;
+    my ($size, $symbol);
+
     do {
         print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
         $size = <STDIN>;
         chomp($size);
     } while ($size < 3);
 
+    my $tictactoe = Games::TicTacToe->new(size => $size);
+
+    do {
+        print {*STDOUT} "Please select the symbol [X / O]: ";
+        $symbol = <STDIN>;
+        chomp($symbol);
+    } unless (defined $symbol && ($symbol =~ /^[X|O]$/i));
+
+    $tictactoe->addPlayer($symbol);
+
     my $response = 'Y';
     while (defined($response)) {
         if ($response =~ /^Y$/i) {
-            my $tictactoe = Games::TicTacToe->new(size => $size);
-            print {*STDOUT} $tictactoe->getGameBoard()
-            $tictactoe->addPlayer();
+            print {*STDOUT} $tictactoe->getGameBoard;
             my $index = 1;
-            while (!$tictactoe->isGameOver()) {
-                $tictactoe->play();
-                print {*STDOUT} $tictactoe->getGameBoard() if ($index % 2 == 0);
+            while (!$tictactoe->isGameOver) {
+                $tictactoe->play;
+                if (($index % 2 == 0) && !$tictactoe->isGameOver) {
+                    print {*STDOUT} $tictactoe->getGameBoard;
+                }
                 $index++;
             }
+
+            $tictactoe->result;
 
             print {*STDOUT} "Do you wish to continue (Y/N)? ";
             $response = <STDIN>;
@@ -113,15 +127,6 @@ sub BUILD {
 
 Returns game board for TicTacToe (3x3) by default.
 
-    use strict; use warnings;
-    use Games::TicTacToe;
-
-    # TicTacToe Board 3x3
-    print Games::TicTacToe->new->getGameBoard;
-
-    # TicTacToe Board 4x4
-    print Games::TicTacToe->new(size => 4)->getGameBoard;
-
 =cut
 
 sub getGameBoard {
@@ -130,54 +135,36 @@ sub getGameBoard {
     return $self->{'board'}->as_string();
 }
 
-=head2 addPlayer()
+=head2 addPlayer($symbol)
 
-Add player to the TicTacToe game. It prompts the  user to pick the symbol for the
-selected user from X/O. Once the symbol is selected then it automatically selects
-the other symbol for the opponent.
-
-    use strict; use warnings;
-    use Games::TicTacToe;
-
-    my $tictactoe = Games::TicTacToe->new;
-    $tictactoe->addPlayer;
+Adds a player with the given C<$symbol>. The other symbol  would  be given to the
+opposite player i.e. Computer.
 
 =cut
 
 sub addPlayer {
-    my ($self) = @_;
+    my ($self, $symbol) = @_;
 
     if (($self->has_players) && (scalar(@{$self->players}) == 2)) {
         warn("WARNING: We already have 2 players to play the TicTacToe game.");
         return;
     }
 
-    my $type = 'H';
-    $type = _validate_player_type($type);
-    print {*STDOUT} "Please select the symbol [X / O]: ";
-    my $symbol = <STDIN>;
-    chomp($symbol);
+    die "ERROR: Missing symbol for the player.\n" unless defined $symbol;
+
     $symbol = _validate_player_symbol($symbol);
 
     # Player 1
-    push @{$self->{players}}, Games::TicTacToe::Player->new(type => $type, symbol => $symbol);
+    push @{$self->{players}}, Games::TicTacToe::Player->new(type => 'H', symbol => $symbol);
 
     # Player 2
-    $type   = ($type   eq 'H')?('C'):('H');
     $symbol = ($symbol eq 'X')?('O'):('X');
-    push @{$self->{players}}, Games::TicTacToe::Player->new(type => $type, symbol => $symbol);
+    push @{$self->{players}}, Games::TicTacToe::Player->new(type => 'C', symbol => $symbol);
 }
 
 =head2 getPlayers()
 
 Returns the players information with their symbol.
-
-    use strict; use warnings;
-    use Games::TicTacToe;
-
-    my $tictactoe = Games::TicTacToe->new;
-    $tictactoe->addPlayer;
-    print $tictactoe->getPlayers;
 
 =cut
 
@@ -200,7 +187,7 @@ sub getPlayers {
 
 =head2 play()
 
-Actually starts the game by prompty player to make a move.
+Actually starts the game by prompting player to make a move.
 
 =cut
 
@@ -214,13 +201,12 @@ sub play {
     my $board  = $self->board;
     my $move   = Games::TicTacToe::Move::now($player, $board);
     $board->setCell($move, $player->symbol);
-    $self->_resetCurrentPlayer();
+    $self->_resetCurrentPlayer() unless ($self->isGameOver);
 }
 
 =head2 isGameOver()
 
-Returns 1 or 0 depending whether the TicTacToe is over or not.It dumps the winner
-name if any found. It also dumps the message if the games is drawn just in case.
+Returns 1 or 0 depending whether the TicTacToe is over or not.
 
 =cut
 
@@ -235,19 +221,39 @@ sub isGameOver {
     my $board = $self->board;
     foreach my $player (@{$self->players}) {
         if (Games::TicTacToe::Move::foundWinner($player, $board)) {
-            print {*STDOUT} $self->getGameBoard();
-            print {*STDOUT} $player->getMessage;
+            $self->winner($player);
             return 1;
         }
     }
 
-    if ($board->isFull()) {
-        print {*STDOUT} $self->getGameBoard();
+    ($board->isFull())
+        ?
+        (return 1)
+        :
+        (return 0);
+}
+
+=head2 result()
+
+Prints the result of the game and also the game board.
+
+=cut
+
+sub result {
+    my ($self) = @_;
+
+    if ($self->has_winner) {
+        print {*STDOUT} $self->winner->getMessage;
+    }
+    else {
         print {*STDOUT} "Game drawn !!!\n";
-        return 1;
     }
 
-    return 0;
+    print {*STDOUT} $self->getGameBoard();
+
+    $self->clear_winner;
+    $self->board->reset;
+    $self->current('H');
 }
 
 #
