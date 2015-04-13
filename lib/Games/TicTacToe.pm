@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.11';
+$Games::TicTacToe::VERSION = '0.12';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
@@ -25,7 +25,7 @@ use namespace::clean;
 has 'board'   => (is => 'rw', isa => $Board);
 has 'current' => (is => 'rw', isa => $Player,  default   => sub { return 'H'; });
 has 'players' => (is => 'rw', isa => $Players, predicate => 1);
-has 'size'    => (is => 'ro', default => sub { return 3 });
+has 'size'    => (is => 'ro', default   => sub { return 3 });
 has 'winner'  => (is => 'rw', predicate => 1, clearer => 1);
 
 =head1 DESCRIPTION
@@ -82,15 +82,38 @@ on install is available to play with.
         if ($response =~ /^Y$/i) {
             print {*STDOUT} $tictactoe->getGameBoard;
             my $index = 1;
+            my $board = $tictactoe->board;
             while (!$tictactoe->isGameOver) {
-                $tictactoe->play;
+                my $move = undef;
+                if ($tictactoe->needNextMove) {
+                    my $available = $board->availableIndex;
+                    if ($tictactoe->isLastMove) {
+                        $move = $available;
+                    }
+                    else {
+                        print {*STDOUT} "What is your next move [$available] ? ";
+                        $move = <STDIN>;
+                        chomp($move);
+                        while (defined $move && !$tictactoe->isValidMove($move)) {
+                            print {*STDOUT} "Please make a valid move [$available]: ";
+                            $move = <STDIN>;
+                            chomp($move);
+                        }
+                    }
+                }
+
+                $tictactoe->play($move);
+
                 if (($index % 2 == 0) && !$tictactoe->isGameOver) {
                     print {*STDOUT} $tictactoe->getGameBoard;
                 }
                 $index++;
             }
 
-            $tictactoe->result;
+            print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->result);
+            print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->getGameBoard);
+
+            $tictactoe->board->reset;
 
             print {*STDOUT} "Do you wish to continue (Y/N)? ";
             $response = <STDIN>;
@@ -185,21 +208,28 @@ sub getPlayers {
     return $players;
 }
 
-=head2 play()
+=head2 play($move)
 
-Actually starts the game by prompting player to make a move.
+Makes the given C<$move>, if provided, otherwise make next best possible moves on
+behalf of opponent.
 
 =cut
 
 sub play {
-    my ($self) = @_;
+    my ($self, $move) = @_;
 
     die("ERROR: Please add player before you start the game.\n")
         unless (($self->has_players) && (scalar(@{$self->players}) == 2));
 
     my $player = $self->_getCurrentPlayer;
     my $board  = $self->board;
-    my $move   = Games::TicTacToe::Move::now($player, $board);
+    if (defined $move && ($self->_getCurrentPlayer->type eq 'H')) {
+        --$move;
+    }
+    else {
+        $move = Games::TicTacToe::Move::now($player, $board);
+    }
+
     $board->setCell($move, $player->symbol);
     $self->_resetCurrentPlayer() unless ($self->isGameOver);
 }
@@ -242,18 +272,47 @@ Prints the result of the game and also the game board.
 sub result {
     my ($self) = @_;
 
+    my $result;
     if ($self->has_winner) {
-        print {*STDOUT} $self->winner->getMessage;
+        $result = $self->winner->getMessage;
     }
     else {
-        print {*STDOUT} "Game drawn !!!\n";
+        $result = "<cyan><bold>Game drawn, better luck next time.</bold></cyan>\n";
     }
 
-    print {*STDOUT} $self->getGameBoard();
-
     $self->clear_winner;
-    $self->board->reset;
     $self->current('H');
+
+    return $result;
+}
+
+=head2 isValidMove($move)
+
+=cut
+
+sub isValidMove {
+    my ($self, $move) = @_;
+
+    return (defined($move)
+            && ($move =~ /^\d+$/)
+            && ($move >= 1) && ($move <= $self->board->getSize)
+            && ($self->board->isCellEmpty($move-1)));
+}
+
+=head2 isLastMove()
+
+=cut
+
+sub isLastMove {
+    my ($self) = @_;
+
+    return ($self->board->availableIndex !~ /\,/);
+}
+
+sub needNextMove {
+    my ($self) = @_;
+
+   return ($self->_getCurrentPlayer->type eq 'H');
 }
 
 #

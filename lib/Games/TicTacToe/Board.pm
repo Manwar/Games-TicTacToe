@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.11';
+$Games::TicTacToe::Board::VERSION = '0.12';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
@@ -171,27 +171,30 @@ Returns the current game board.
 sub as_string {
     my ($self) = @_;
 
-    my $size        = sqrt($self->getSize);
-    my $cell_width  = _cell_width($size);
-    my $table_width = _table_width($size);
-    my $board       = '+'. '-'x($table_width-2). "+\n";
+    my $size          = sqrt($self->getSize);
+    my $cell_width    = _cell_width($size);
+    my $table_width   = _table_width($size);
+    my $board_color_s = "<blue><bold>";
+    my $board_color_e = "</bold></blue>";
+    my $board         = sprintf("+%s%s+\n", $board_color_s, '-'x($table_width-2));
     $board .= _table_header($size);
 
     foreach my $col (1..$size) {
         $board .= sprintf("+%s", '-'x$cell_width);
     }
-    $board .= "+\n";
+    $board .= sprintf("+%s\n", $board_color_e);
 
     my $i = 0;
     foreach my $row (1..$size) {
         foreach my $col (1..$size) {
-            $board .= sprintf("| %-".($cell_width-2)."s ", $self->{cell}->[$i++]);
+            $board .= sprintf("$board_color_s|$board_color_e %-".($cell_width-2)."s ",
+                              _color_code($cell_width, $self->{cell}->[$i++]));
         }
-        $board .= "|\n";
+        $board .= "$board_color_s|\n";
         foreach my $col (1..$size) {
             $board .= sprintf("+%s", '-'x$cell_width);
         }
-        $board .= "+\n";
+        $board .= "+$board_color_e\n";
     }
 
     return $board;
@@ -248,6 +251,20 @@ sub _table_header {
     my $format = "%-".$left."s%s%".$right."s\n";
 
     return sprintf($format, '|', 'TicTacToe', '|');
+}
+
+sub _color_code {
+    my ($width, $text) = @_;
+
+    if ($text =~ /^\d+$/) {
+        return $text;
+    }
+    elsif ($text eq 'X') {
+        return "<red><bold>" . sprintf("%-".($width-2)."s", $text) . "</bold></red>";
+    }
+    elsif ($text eq 'O') {
+        return "<green><bold>" . sprintf("%-".($width-2)."s", $text) . "</bold></green>";
+    }
 }
 
 =head1 AUTHOR

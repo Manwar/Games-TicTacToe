@@ -1,6 +1,6 @@
 package Games::TicTacToe::Move;
 
-$Games::TicTacToe::Move::VERSION = '0.11';
+$Games::TicTacToe::Move::VERSION = '0.12';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Move - Interface to the TicTacToe game's move.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
@@ -45,7 +45,7 @@ sub foundWinner {
 
 =head2 now($player, $board)
 
-Make a move now for the current player.
+Make a move now for computer.
 
 =cut
 
@@ -54,41 +54,6 @@ sub now {
 
     die("ERROR: Player not defined.\n") unless defined $player;
     die("ERROR: Board not defined.\n")  unless defined $board;
-
-    if ($player->type eq 'H') {
-        return _humanMove($board);
-    }
-    else {
-        return _computerMove($board, $player);
-    }
-}
-
-#
-#
-# PRIVATE METHODS
-
-sub _humanMove {
-    my ($board) = @_;
-
-    my $size      = $board->getSize;
-    my $available = $board->availableIndex;
-    print {*STDOUT} "What is your next move [$available] ? ";
-    my $move = <STDIN>;
-    chomp($move);
-    while (!(defined($move)
-             && ($move =~ /^\d+$/)
-             && ($move >= 1) && ($move <= $size)
-             && ($board->isCellEmpty($move-1)))) {
-        print {*STDOUT} "Please make a valid move [$available]: ";
-        $move = <STDIN>;
-        chomp($move);
-    }
-
-    return ($move-1);
-}
-
-sub _computerMove {
-    my ($board, $player) = @_;
 
     my $move = _getBestMove($board, $player);
     return $move unless ($move == -1);
@@ -103,6 +68,10 @@ sub _computerMove {
         return $i if $board->isCellEmpty($i);
     }
 }
+
+#
+#
+# PRIVATE METHODS
 
 sub _getBestMove {
     my ($board, $player) = @_;

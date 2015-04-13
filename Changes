@@ -1,5 +1,9 @@
 Revision history for Games-TicTacToe
 
+0.12    Mon Apr 13 11:15:00 2015
+        - Improved the game and dont ask for move if it is the last move.
+        - Limited the prompting to the game script only.
+
 0.11    Fri Apr 10 10:35:00 2015
         - Updated game script slight to improved the flow.
         - Updated method addPlayer() to just add player and do nothing.

@@ -2,6 +2,7 @@
 
 use strict; use warnings;
 use Games::TicTacToe;
+use Term::ANSIColor::Markup;
 
 $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
@@ -26,17 +27,40 @@ $tictactoe->addPlayer($symbol);
 my $response = 'Y';
 while (defined($response)) {
     if ($response =~ /^Y$/i) {
-        print {*STDOUT} $tictactoe->getGameBoard;
+        print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->getGameBoard);
         my $index = 1;
+        my $board = $tictactoe->board;
         while (!$tictactoe->isGameOver) {
-            $tictactoe->play;
+            my $move = undef;
+            if ($tictactoe->needNextMove) {
+                my $available = $board->availableIndex;
+                if ($tictactoe->isLastMove) {
+                    $move = $available;
+                }
+                else {
+                    print {*STDOUT} "What is your next move [$available] ? ";
+                    $move = <STDIN>;
+                    chomp($move);
+                    while (defined $move && !$tictactoe->isValidMove($move)) {
+                        print {*STDOUT} "Please make a valid move [$available]: ";
+                        $move = <STDIN>;
+                        chomp($move);
+                    }
+                }
+            }
+
+            $tictactoe->play($move);
+
             if (($index % 2 == 0) && !$tictactoe->isGameOver) {
-                print {*STDOUT} $tictactoe->getGameBoard;
+                print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->getGameBoard);
             }
             $index++;
         }
 
-        $tictactoe->result;
+        print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->result);
+        print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->getGameBoard);
+
+        $tictactoe->board->reset;
 
         print {*STDOUT} "Do you wish to continue (Y/N)? ";
         $response = <STDIN>;

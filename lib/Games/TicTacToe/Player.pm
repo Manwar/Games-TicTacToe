@@ -1,6 +1,6 @@
 package Games::TicTacToe::Player;
 
-$Games::TicTacToe::Player::VERSION = '0.11';
+$Games::TicTacToe::Player::VERSION = '0.12';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Player - Interface to the TicTacToe game's player.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
@@ -61,7 +61,12 @@ Returns the winning message for the player.
 sub getMessage {
     my ($self) = @_;
 
-    return sprintf("Congratulation, %s won the game.\n", $self->desc);
+    if ($self->type eq 'H') {
+        return "<green><bold>Congratulation, you won the game.</bold></green>\n";
+    }
+    else {
+        return "<red><bold>Computer beat you this time. Better luck next time.</bold></red>\n";
+    }
 }
 
 =head1 AUTHOR
