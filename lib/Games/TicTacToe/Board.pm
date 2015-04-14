@@ -1,6 +1,6 @@
 package Games::TicTacToe::Board;
 
-$Games::TicTacToe::Board::VERSION = '0.12';
+$Games::TicTacToe::Board::VERSION = '0.13';
 
 =head1 NAME
 
@@ -8,12 +8,13 @@ Games::TicTacToe::Board - Interface to the TicTacToe game's board.
 
 =head1 VERSION
 
-Version 0.12
+Version 0.13
 
 =cut
 
 use 5.006;
 use Data::Dumper;
+use Term::ANSIColor::Markup;
 
 use Moo;
 use namespace::clean;
@@ -197,7 +198,7 @@ sub as_string {
         $board .= "+$board_color_e\n";
     }
 
-    return $board;
+    return Term::ANSIColor::Markup->colorize($board);
 }
 
 =head2 reset()

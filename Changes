@@ -1,5 +1,8 @@
 Revision history for Games-TicTacToe
 
+0.13    Tue Apr 14 10:30:00 2015
+        - Tightened up the loose ends in the game script.
+
 0.12    Mon Apr 13 11:15:00 2015
         - Improved the game and dont ask for move if it is the last move.
         - Limited the prompting to the game script only.

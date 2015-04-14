@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.12';
+$Games::TicTacToe::VERSION = '0.13';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.12
+Version 0.13
 
 =cut
 
@@ -110,8 +110,8 @@ on install is available to play with.
                 $index++;
             }
 
-            print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->result);
-            print {*STDOUT} Term::ANSIColor::Markup->colorize($tictactoe->getGameBoard);
+            print {*STDOUT} $tictactoe->result;
+            print {*STDOUT} $tictactoe->getGameBoard;
 
             $tictactoe->board->reset;
 
@@ -283,7 +283,7 @@ sub result {
     $self->clear_winner;
     $self->current('H');
 
-    return $result;
+    return Term::ANSIColor::Markup->colorize($result);
 }
 
 =head2 isValidMove($move)
