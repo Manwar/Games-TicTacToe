@@ -1,5 +1,20 @@
 Revision history for Games-TicTacToe
 
+0.14    Wed Apr 15 12:50:00 2015
+        - Added the following new methods to the package Games::TicTacToe.
+          - setGameBoard()
+          - isValidSymbol()
+          - isValidGameBoardSize()
+        - Added documentation to the pod for the following methods:
+          - isValidMove()
+          - isLastMove()
+          - needNextMove()
+        - Removed the following obsolete methods:
+          - _validate_player_type()
+          - _validate_player_symbol()
+        - Updated method addPlayer() and removed validating player symbol.
+        - Updated game script to reflect the above changes.
+
 0.13    Tue Apr 14 10:30:00 2015
         - Tightened up the loose ends in the game script.
 

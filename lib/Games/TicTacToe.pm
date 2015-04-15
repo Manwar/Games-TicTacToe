@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.13';
+$Games::TicTacToe::VERSION = '0.14';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.13
+Version 0.14
 
 =cut
 
@@ -60,20 +60,21 @@ on install is available to play with.
     $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
     my ($size, $symbol);
+    my $tictactoe = Games::TicTacToe->new;
 
     do {
-        print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
+        print {*STDOUT} "Please enter game board size (type 3 if you want 3x3): ";
         $size = <STDIN>;
         chomp($size);
-    } while ($size < 3);
+    } while (!$tictactoe->isValidGameBoardSize($size));
 
-    my $tictactoe = Games::TicTacToe->new(size => $size);
+    $tictactoe->setGameBoard($size);
 
     do {
         print {*STDOUT} "Please select the symbol [X / O]: ";
         $symbol = <STDIN>;
         chomp($symbol);
-    } unless (defined $symbol && ($symbol =~ /^[X|O]$/i));
+    } while (!$tictactoe->isValidSymbol($symbol));
 
     $tictactoe->addPlayer($symbol);
 
@@ -139,12 +140,23 @@ Once it is installed, it can be played on a terminal/command window  as below:
 sub BUILD {
     my ($self) = @_;
 
-    my $size = $self->size;
-    my $cell = [ map { $_ } (1..($size*$size)) ];
-    $self->board(Games::TicTacToe::Board->new(cell => $cell));
+    $self->setGameBoard($self->size);
 }
 
 =head1 METHODS
+
+=head2 setGameBoard($size)
+
+It sets up the game board of the given C<$size>.
+
+=cut
+
+sub setGameBoard {
+    my ($self, $size) = @_;
+
+    my $cell = [ map { $_ } (1..($size*$size)) ];
+    $self->board(Games::TicTacToe::Board->new(cell => $cell));
+}
 
 =head2 getGameBoard()
 
@@ -174,8 +186,6 @@ sub addPlayer {
     }
 
     die "ERROR: Missing symbol for the player.\n" unless defined $symbol;
-
-    $symbol = _validate_player_symbol($symbol);
 
     # Player 1
     push @{$self->{players}}, Games::TicTacToe::Player->new(type => 'H', symbol => $symbol);
@@ -288,6 +298,8 @@ sub result {
 
 =head2 isValidMove($move)
 
+Returns 0 or 1 depending on whether the given C<$move> is valid or not.
+
 =cut
 
 sub isValidMove {
@@ -301,6 +313,8 @@ sub isValidMove {
 
 =head2 isLastMove()
 
+Returns 0 or 1 depending on whether it is the last move.
+
 =cut
 
 sub isLastMove {
@@ -309,39 +323,45 @@ sub isLastMove {
     return ($self->board->availableIndex !~ /\,/);
 }
 
+=head2 needNextMove()
+
+Returns 0 or 1 depending on whether it needs to prompt for next move.
+
+=cut
+
 sub needNextMove {
     my ($self) = @_;
 
    return ($self->_getCurrentPlayer->type eq 'H');
 }
 
+=head2 isValidSymbol($symbol)
+
+Returns 0 or 1 depending on whether the given C<$symbol> is valid or not.
+
+=cut
+
+sub isValidSymbol {
+    my ($self, $symbol) = @_;
+
+    return (defined $symbol && ($symbol =~ /X|O/i));
+}
+
+=head2 isValidGameBoardSize($size)
+
+Returns 0 or 1 depending on whether the given C<$size> is valid or not.
+
+=cut
+
+sub isValidGameBoardSize {
+    my ($self, $size) = @_;
+
+    return (defined $size && ($size >= 3));
+}
+
 #
 #
 # PRIVATE METHODS
-
-sub _validate_player_type {
-    my ($player) = @_;
-
-    while (defined($player) && ($player !~ /H|C/i)) {
-        print {*STDOUT} "Please select a valid player [H - Human, C - Computer]: ";
-        $player = <STDIN>;
-        chomp($player);
-    }
-
-    return $player;
-}
-
-sub _validate_player_symbol {
-    my ($symbol) = @_;
-
-    while (defined($symbol) && ($symbol !~ /X|O/i)) {
-        print {*STDOUT} "Please select a valid symbol [X / O]: ";
-        $symbol = <STDIN>;
-        chomp($symbol);
-    }
-
-    return $symbol;
-}
 
 sub _getCurrentPlayer {
     my ($self) = @_;

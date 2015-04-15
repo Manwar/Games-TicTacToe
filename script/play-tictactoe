@@ -3,23 +3,26 @@
 use strict; use warnings;
 use Games::TicTacToe;
 
+$|=1;
+
 $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
 my ($size, $symbol);
+my $tictactoe = Games::TicTacToe->new;
 
 do {
-    print {*STDOUT} "Please enter board size (type 3 if you want 3x3): ";
+    print {*STDOUT} "Please enter game board size (type 3 if you want 3x3): ";
     $size = <STDIN>;
     chomp($size);
-} while ($size < 3);
+} while (!$tictactoe->isValidGameBoardSize($size));
 
-my $tictactoe = Games::TicTacToe->new(size => $size);
+$tictactoe->setGameBoard($size);
 
 do {
     print {*STDOUT} "Please select the symbol [X / O]: ";
     $symbol = <STDIN>;
     chomp($symbol);
-} unless (defined $symbol && ($symbol =~ /^[X|O]$/i));
+} while (!$tictactoe->isValidSymbol($symbol));
 
 $tictactoe->addPlayer($symbol);
 
