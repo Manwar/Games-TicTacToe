@@ -1,5 +1,11 @@
 Revision history for Games-TicTacToe
 
+0.15    Tue Apr 28 14:40:00 2015
+        - Made symbol selection case insensitive.
+        - Simplified the flow of game script.
+        - Updated pod description for the method result().
+        - Minor cleanup of the package Games::TicTacToe.
+
 0.14    Wed Apr 15 12:50:00 2015
         - Added the following new methods to the package Games::TicTacToe.
           - setGameBoard()

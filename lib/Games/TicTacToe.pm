@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.14';
+$Games::TicTacToe::VERSION = '0.15';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.14
+Version 0.15
 
 =cut
 
@@ -57,9 +57,11 @@ on install is available to play with.
     use strict; use warnings;
     use Games::TicTacToe;
 
+    $|=1;
+
     $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
-    my ($size, $symbol);
+    my ($size);
     my $tictactoe = Games::TicTacToe->new;
 
     do {
@@ -70,6 +72,7 @@ on install is available to play with.
 
     $tictactoe->setGameBoard($size);
 
+    my ($symbol);
     do {
         print {*STDOUT} "Please select the symbol [X / O]: ";
         $symbol = <STDIN>;
@@ -78,58 +81,49 @@ on install is available to play with.
 
     $tictactoe->addPlayer($symbol);
 
-    my $response = 'Y';
-    while (defined($response)) {
-        if ($response =~ /^Y$/i) {
-            print {*STDOUT} $tictactoe->getGameBoard;
-            my $index = 1;
-            my $board = $tictactoe->board;
-            while (!$tictactoe->isGameOver) {
-                my $move = undef;
-                if ($tictactoe->needNextMove) {
-                    my $available = $board->availableIndex;
-                    if ($tictactoe->isLastMove) {
-                        $move = $available;
-                    }
-                    else {
+    my ($response);
+    do {
+        print {*STDOUT} $tictactoe->getGameBoard;
+        my $index = 1;
+        my $board = $tictactoe->board;
+        while (!$tictactoe->isGameOver) {
+            my $move = undef;
+            if ($tictactoe->needNextMove) {
+                my $available = $board->availableIndex;
+                if ($tictactoe->isLastMove) {
+                    $move = $available;
+                }
+                else {
+                    do {
                         print {*STDOUT} "What is your next move [$available] ? ";
                         $move = <STDIN>;
                         chomp($move);
-                        while (defined $move && !$tictactoe->isValidMove($move)) {
-                            print {*STDOUT} "Please make a valid move [$available]: ";
-                            $move = <STDIN>;
-                            chomp($move);
-                        }
-                    }
+                    } while (defined $move && !$tictactoe->isValidMove($move));
                 }
-
-                $tictactoe->play($move);
-
-                if (($index % 2 == 0) && !$tictactoe->isGameOver) {
-                    print {*STDOUT} $tictactoe->getGameBoard;
-                }
-                $index++;
             }
 
-            print {*STDOUT} $tictactoe->result;
-            print {*STDOUT} $tictactoe->getGameBoard;
+            $tictactoe->play($move);
 
-            $tictactoe->board->reset;
+            if (($index % 2 == 0) && !$tictactoe->isGameOver) {
+                print {*STDOUT} $tictactoe->getGameBoard;
+            }
+            $index++;
+        }
 
+        print {*STDOUT} $tictactoe->result;
+        print {*STDOUT} $tictactoe->getGameBoard;
+
+        $tictactoe->board->reset;
+
+        do {
             print {*STDOUT} "Do you wish to continue (Y/N)? ";
             $response = <STDIN>;
             chomp($response);
-        }
-        elsif ($response =~ /^N$/i) {
-            print {*STDOUT} "Thank you.\n";
-            last;
-        }
-        elsif ($response !~ /^[Y|N]$/i) {
-            print {*STDOUT} "Invalid response, please enter (Y/N): ";
-            $response = <STDIN>;
-            chomp($response);
-        }
-    }
+        } while (defined $response && ($response !~ /^[Y|N]$/i));
+
+    } while (defined($response) && ($response =~ /^Y$/i));
+
+    print {*STDOUT} "Thank you.\n";
 
 Once it is installed, it can be played on a terminal/command window  as below:
 
@@ -154,7 +148,7 @@ It sets up the game board of the given C<$size>.
 sub setGameBoard {
     my ($self, $size) = @_;
 
-    my $cell = [ map { $_ } (1..($size*$size)) ];
+    my $cell = [ map { $_ } (1..($size * $size)) ];
     $self->board(Games::TicTacToe::Board->new(cell => $cell));
 }
 
@@ -167,7 +161,7 @@ Returns game board for TicTacToe (3x3) by default.
 sub getGameBoard {
     my ($self) = @_;
 
-    return $self->{'board'}->as_string();
+    return $self->board->as_string;
 }
 
 =head2 addPlayer($symbol)
@@ -188,10 +182,10 @@ sub addPlayer {
     die "ERROR: Missing symbol for the player.\n" unless defined $symbol;
 
     # Player 1
-    push @{$self->{players}}, Games::TicTacToe::Player->new(type => 'H', symbol => $symbol);
+    push @{$self->{players}}, Games::TicTacToe::Player->new(type => 'H', symbol => uc($symbol));
 
     # Player 2
-    $symbol = ($symbol eq 'X')?('O'):('X');
+    $symbol = (uc($symbol) eq 'X')?('O'):('X');
     push @{$self->{players}}, Games::TicTacToe::Player->new(type => 'C', symbol => $symbol);
 }
 
@@ -241,7 +235,7 @@ sub play {
     }
 
     $board->setCell($move, $player->symbol);
-    $self->_resetCurrentPlayer() unless ($self->isGameOver);
+    $self->_resetCurrentPlayer unless ($self->isGameOver);
 }
 
 =head2 isGameOver()
@@ -266,16 +260,12 @@ sub isGameOver {
         }
     }
 
-    ($board->isFull())
-        ?
-        (return 1)
-        :
-        (return 0);
+    ($board->isFull)?(return 1):(return 0);
 }
 
 =head2 result()
 
-Prints the result of the game and also the game board.
+Retursn the result message.
 
 =cut
 
@@ -287,6 +277,7 @@ sub result {
         $result = $self->winner->getMessage;
     }
     else {
+        die "ERROR: Game is not finished yet.\n" unless $self->board->isFull;
         $result = "<cyan><bold>Game drawn, better luck next time.</bold></cyan>\n";
     }
 
@@ -366,7 +357,7 @@ sub isValidGameBoardSize {
 sub _getCurrentPlayer {
     my ($self) = @_;
 
-    ($self->{players}->[0]->{type} eq $self->{current})
+    ($self->{players}->[0]->type eq $self->current)
     ?
     (return $self->{players}->[0])
     :
@@ -376,11 +367,11 @@ sub _getCurrentPlayer {
 sub _resetCurrentPlayer {
     my ($self) = @_;
 
-    ($self->{players}->[0]->{type} eq $self->{current})
+    ($self->{players}->[0]->type eq $self->current)
     ?
-    ($self->{current} = $self->{players}->[1]->{type})
+    ($self->current($self->{players}->[1]->type))
     :
-    ($self->{current} = $self->{players}->[0]->{type});
+    ($self->current($self->{players}->[0]->type));
 }
 
 =head1 AUTHOR

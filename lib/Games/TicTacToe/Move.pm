@@ -1,6 +1,6 @@
 package Games::TicTacToe::Move;
 
-$Games::TicTacToe::Move::VERSION = '0.14';
+$Games::TicTacToe::Move::VERSION = '0.15';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Move - Interface to the TicTacToe game's move.
 
 =head1 VERSION
 
-Version 0.14
+Version 0.15
 
 =cut
 

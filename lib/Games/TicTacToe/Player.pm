@@ -1,6 +1,6 @@
 package Games::TicTacToe::Player;
 
-$Games::TicTacToe::Player::VERSION = '0.14';
+$Games::TicTacToe::Player::VERSION = '0.15';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Player - Interface to the TicTacToe game's player.
 
 =head1 VERSION
 
-Version 0.14
+Version 0.15
 
 =cut
 
@@ -37,7 +37,7 @@ Returns opposition player's symbol.
 sub otherSymbol {
     my ($self) = @_;
 
-    return ($self->symbol eq 'X')?('O'):('X');
+    return (uc($self->symbol) eq 'X')?('O'):('X');
 }
 
 =head2 desc()
