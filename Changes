@@ -1,5 +1,11 @@
 Revision history for Games-TicTacToe
 
+0.16    Wed Apr 29 16:50:00 2015
+        - Deleted method isLastMove() as it no longer required.
+        - Renamed method result() to getResult() to be in line with others.
+        - Updated play-tictactoe script to reflect the above changes.
+        - Updated section "SYNOPSIS" to reflect the above changes.
+
 0.15    Tue Apr 28 14:40:00 2015
         - Made symbol selection case insensitive.
         - Simplified the flow of game script.

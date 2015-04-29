@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.15';
+$Games::TicTacToe::VERSION = '0.16';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.15
+Version 0.16
 
 =cut
 
@@ -90,7 +90,7 @@ on install is available to play with.
             my $move = undef;
             if ($tictactoe->needNextMove) {
                 my $available = $board->availableIndex;
-                if ($tictactoe->isLastMove) {
+                if ($available != /\,/) {
                     $move = $available;
                 }
                 else {
@@ -110,7 +110,7 @@ on install is available to play with.
             $index++;
         }
 
-        print {*STDOUT} $tictactoe->result;
+        print {*STDOUT} $tictactoe->getResult;
         print {*STDOUT} $tictactoe->getGameBoard;
 
         $tictactoe->board->reset;
@@ -263,13 +263,13 @@ sub isGameOver {
     ($board->isFull)?(return 1):(return 0);
 }
 
-=head2 result()
+=head2 getResult()
 
-Retursn the result message.
+Returns the result message.
 
 =cut
 
-sub result {
+sub getResult {
     my ($self) = @_;
 
     my $result;
@@ -300,18 +300,6 @@ sub isValidMove {
             && ($move =~ /^\d+$/)
             && ($move >= 1) && ($move <= $self->board->getSize)
             && ($self->board->isCellEmpty($move-1)));
-}
-
-=head2 isLastMove()
-
-Returns 0 or 1 depending on whether it is the last move.
-
-=cut
-
-sub isLastMove {
-    my ($self) = @_;
-
-    return ($self->board->availableIndex !~ /\,/);
 }
 
 =head2 needNextMove()

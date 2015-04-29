@@ -36,7 +36,7 @@ do {
         my $move = undef;
         if ($tictactoe->needNextMove) {
             my $available = $board->availableIndex;
-            if ($tictactoe->isLastMove) {
+            if ($available !~ /\,/) {
                 $move = $available;
             }
             else {
@@ -56,7 +56,7 @@ do {
         $index++;
     }
 
-    print {*STDOUT} $tictactoe->result;
+    print {*STDOUT} $tictactoe->getResult;
     print {*STDOUT} $tictactoe->getGameBoard;
 
     $tictactoe->board->reset;

@@ -1,6 +1,6 @@
 package Games::TicTacToe::Params;
 
-$Games::TicTacToe::Params::VERSION = '0.15';
+$Games::TicTacToe::Params::VERSION = '0.16';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe::Params - Placeholder for parameters for Games::TicTacToe.
 
 =head1 VERSION
 
-Version 0.15
+Version 0.16
 
 =cut
 
