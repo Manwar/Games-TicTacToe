@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.16';
+$Games::TicTacToe::VERSION = '0.17';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.16
+Version 0.17
 
 =cut
 
@@ -61,14 +61,14 @@ on install is available to play with.
 
     $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
-    my ($size);
     my $tictactoe = Games::TicTacToe->new;
 
+    my ($size);
     do {
         print {*STDOUT} "Please enter game board size (type 3 if you want 3x3): ";
         $size = <STDIN>;
         chomp($size);
-    } while (!$tictactoe->isValidGameBoardSize($size));
+    } until ($tictactoe->isValidGameBoardSize($size));
 
     $tictactoe->setGameBoard($size);
 
@@ -77,7 +77,7 @@ on install is available to play with.
         print {*STDOUT} "Please select the symbol [X / O]: ";
         $symbol = <STDIN>;
         chomp($symbol);
-    } while (!$tictactoe->isValidSymbol($symbol));
+    } until ($tictactoe->isValidSymbol($symbol));
 
     $tictactoe->addPlayer($symbol);
 
@@ -86,11 +86,11 @@ on install is available to play with.
         print {*STDOUT} $tictactoe->getGameBoard;
         my $index = 1;
         my $board = $tictactoe->board;
-        while (!$tictactoe->isGameOver) {
+        do {
             my $move = undef;
             if ($tictactoe->needNextMove) {
                 my $available = $board->availableIndex;
-                if ($available != /\,/) {
+                if ($tictactoe->isLastMove) {
                     $move = $available;
                 }
                 else {
@@ -98,30 +98,33 @@ on install is available to play with.
                         print {*STDOUT} "What is your next move [$available] ? ";
                         $move = <STDIN>;
                         chomp($move);
-                    } while (defined $move && !$tictactoe->isValidMove($move));
+                    } until ($tictactoe->isValidMove($move));
                 }
             }
 
             $tictactoe->play($move);
 
-            if (($index % 2 == 0) && !$tictactoe->isGameOver) {
-                print {*STDOUT} $tictactoe->getGameBoard;
+            print {*STDOUT} $tictactoe->getGameBoard
+                if (($index % 2 == 0) && !$tictactoe->isGameOver);
+
             }
+
             $index++;
-        }
+
+        } until ($tictactoe->isGameOver);
 
         print {*STDOUT} $tictactoe->getResult;
         print {*STDOUT} $tictactoe->getGameBoard;
 
-        $tictactoe->board->reset;
+        $board->reset;
 
         do {
             print {*STDOUT} "Do you wish to continue (Y/N)? ";
             $response = <STDIN>;
             chomp($response);
-        } while (defined $response && ($response !~ /^[Y|N]$/i));
+        } until (defined $response && ($response =~ /^[Y|N]$/i));
 
-    } while (defined($response) && ($response =~ /^Y$/i));
+    } until ($response =~ /^N$/i);
 
     print {*STDOUT} "Thank you.\n";
 
@@ -240,7 +243,7 @@ sub play {
 
 =head2 isGameOver()
 
-Returns 1 or 0 depending whether the TicTacToe is over or not.
+Returns 0 or 1 depending whether the TicTacToe is over or not.
 
 =cut
 
@@ -260,7 +263,7 @@ sub isGameOver {
         }
     }
 
-    ($board->isFull)?(return 1):(return 0);
+    return $board->isFull;
 }
 
 =head2 getResult()
@@ -314,6 +317,18 @@ sub needNextMove {
    return ($self->_getCurrentPlayer->type eq 'H');
 }
 
+=head2 isLastMove()
+
+Returns 0 or 1 depending on whether it is the last move.
+
+=cut
+
+sub isLastMove {
+    my ($self) = @_;
+
+   return ($self->board->availableIndex !~ /\,/);
+}
+
 =head2 isValidSymbol($symbol)
 
 Returns 0 or 1 depending on whether the given C<$symbol> is valid or not.
@@ -323,7 +338,7 @@ Returns 0 or 1 depending on whether the given C<$symbol> is valid or not.
 sub isValidSymbol {
     my ($self, $symbol) = @_;
 
-    return (defined $symbol && ($symbol =~ /X|O/i));
+    return (defined $symbol && ($symbol =~ /^[X|O]$/i));
 }
 
 =head2 isValidGameBoardSize($size)

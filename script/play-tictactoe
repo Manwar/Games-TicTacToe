@@ -7,14 +7,14 @@ $|=1;
 
 $SIG{'INT'} = sub { print {*STDOUT} "\n\nCaught Interrupt (^C), Aborting\n"; exit(1); };
 
-my ($size);
 my $tictactoe = Games::TicTacToe->new;
 
+my ($size);
 do {
     print {*STDOUT} "Please enter game board size (type 3 if you want 3x3): ";
     $size = <STDIN>;
     chomp($size);
-} while (!$tictactoe->isValidGameBoardSize($size));
+} until ($tictactoe->isValidGameBoardSize($size));
 
 $tictactoe->setGameBoard($size);
 
@@ -23,7 +23,7 @@ do {
     print {*STDOUT} "Please select the symbol [X / O]: ";
     $symbol = <STDIN>;
     chomp($symbol);
-} while (!$tictactoe->isValidSymbol($symbol));
+} until ($tictactoe->isValidSymbol($symbol));
 
 $tictactoe->addPlayer($symbol);
 
@@ -32,41 +32,42 @@ do {
     print {*STDOUT} $tictactoe->getGameBoard;
     my $index = 1;
     my $board = $tictactoe->board;
-    while (!$tictactoe->isGameOver) {
+    do {
         my $move = undef;
         if ($tictactoe->needNextMove) {
             my $available = $board->availableIndex;
-            if ($available !~ /\,/) {
+            if ($tictactoe->isLastMove) {
                 $move = $available;
             }
             else {
                 do {
-                    print {*STDOUT} "What is your next move [$available] ? ";
+                    print {*STDOUT} "What is your next move [$available]? ";
                     $move = <STDIN>;
                     chomp($move);
-                } while (defined $move && !$tictactoe->isValidMove($move));
+                } until ($tictactoe->isValidMove($move));
             }
         }
 
         $tictactoe->play($move);
 
-        if (($index % 2 == 0) && !$tictactoe->isGameOver) {
-            print {*STDOUT} $tictactoe->getGameBoard;
-        }
+        print {*STDOUT} $tictactoe->getGameBoard
+            unless (($index % 2 == 1) || $tictactoe->isGameOver);
+
         $index++;
-    }
+
+    } until ($tictactoe->isGameOver);
 
     print {*STDOUT} $tictactoe->getResult;
     print {*STDOUT} $tictactoe->getGameBoard;
 
-    $tictactoe->board->reset;
+    $board->reset;
 
     do {
         print {*STDOUT} "Do you wish to continue (Y/N)? ";
         $response = <STDIN>;
         chomp($response);
-    } while (defined $response && ($response !~ /^[Y|N]$/i));
+    } until (defined $response && ($response =~ /^[Y|N]$/i));
 
-} while (defined($response) && ($response =~ /^Y$/i));
+} until ($response =~ /^N$/i);
 
 print {*STDOUT} "Thank you.\n";

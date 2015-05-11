@@ -1,5 +1,10 @@
 Revision history for Games-TicTacToe
 
+0.17    Mon May 11 11:45:00 2015
+        - Tidied up game script.
+        - Added method isLastMove().
+        - Updated method isGameOver().
+
 0.16    Wed Apr 29 16:50:00 2015
         - Deleted method isLastMove() as it no longer required.
         - Renamed method result() to getResult() to be in line with others.
