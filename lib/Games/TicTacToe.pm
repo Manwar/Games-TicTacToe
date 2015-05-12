@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.17';
+$Games::TicTacToe::VERSION = '0.18';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.17
+Version 0.18
 
 =cut
 
@@ -105,7 +105,7 @@ on install is available to play with.
             $tictactoe->play($move);
 
             print {*STDOUT} $tictactoe->getGameBoard
-                if (($index % 2 == 0) && !$tictactoe->isGameOver);
+                unless (($index % 2 == 1) || $tictactoe->isGameOver);
 
             }
 
@@ -243,7 +243,7 @@ sub play {
 
 =head2 isGameOver()
 
-Returns 0 or 1 depending whether the TicTacToe is over or not.
+Returns 0 or 1 depending whether the TicTacToe game is over or not.
 
 =cut
 

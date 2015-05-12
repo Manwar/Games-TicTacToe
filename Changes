@@ -1,5 +1,9 @@
 Revision history for Games-TicTacToe
 
+0.18    Tue May 12 15:05:00 2015
+        - Updated code in the section "SYNOPSIS".
+        - Fixed the typo in pod description of the method isGameOver().
+
 0.17    Mon May 11 11:45:00 2015
         - Tidied up game script.
         - Added method isLastMove().
