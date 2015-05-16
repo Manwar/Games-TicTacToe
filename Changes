@@ -1,5 +1,12 @@
 Revision history for Games-TicTacToe
 
+0.19    Sat May 16 20:40:00 2015
+        - Fixed sample code in the section "SYNOPSIS".
+        - Renamed method addPlayer() to setPlayers().
+        - Renamed test script 02-Games-Tictactoe-addPlayer.t to 02-Games-Tictactoe-setPlayers.t.
+        - Fixed unit with regard to the renaming of method addPlayer().
+        - Arranged the methods in the pod document of package Games::TicTacToe.
+
 0.18    Tue May 12 15:05:00 2015
         - Updated code in the section "SYNOPSIS".
         - Fixed the typo in pod description of the method isGameOver().

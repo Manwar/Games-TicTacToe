@@ -12,7 +12,7 @@ lib/Games/TicTacToe/Params.pm
 script/play-tictactoe
 t/00-load.t
 t/01-Games-Tictactoe-new.t
-t/02-Games-Tictactoe-addPlayer.t
+t/02-Games-Tictactoe-setPlayers.t
 t/03-Games-Tictactoe-getPlayers.t
 t/04-Games-Tictactoe-play.t
 t/05-Games-Tictactoe-isGameOver.t

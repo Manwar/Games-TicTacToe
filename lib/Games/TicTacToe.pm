@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.18';
+$Games::TicTacToe::VERSION = '0.19';
 
 =head1 NAME
 
@@ -8,7 +8,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.18
+Version 0.19
 
 =cut
 
@@ -79,7 +79,7 @@ on install is available to play with.
         chomp($symbol);
     } until ($tictactoe->isValidSymbol($symbol));
 
-    $tictactoe->addPlayer($symbol);
+    $tictactoe->setPlayers($symbol);
 
     my ($response);
     do {
@@ -106,8 +106,6 @@ on install is available to play with.
 
             print {*STDOUT} $tictactoe->getGameBoard
                 unless (($index % 2 == 1) || $tictactoe->isGameOver);
-
-            }
 
             $index++;
 
@@ -167,14 +165,14 @@ sub getGameBoard {
     return $self->board->as_string;
 }
 
-=head2 addPlayer($symbol)
+=head2 setPlayers($symbol)
 
 Adds a player with the given C<$symbol>. The other symbol  would  be given to the
 opposite player i.e. Computer.
 
 =cut
 
-sub addPlayer {
+sub setPlayers {
     my ($self, $symbol) = @_;
 
     if (($self->has_players) && (scalar(@{$self->players}) == 2)) {
@@ -241,6 +239,54 @@ sub play {
     $self->_resetCurrentPlayer unless ($self->isGameOver);
 }
 
+=head2 getResult()
+
+Returns the result message.
+
+=cut
+
+sub getResult {
+    my ($self) = @_;
+
+    my $result;
+    if ($self->has_winner) {
+        $result = $self->winner->getMessage;
+    }
+    else {
+        die "ERROR: Game is not finished yet.\n" unless $self->board->isFull;
+        $result = "<cyan><bold>Game drawn, better luck next time.</bold></cyan>\n";
+    }
+
+    $self->clear_winner;
+    $self->current('H');
+
+    return Term::ANSIColor::Markup->colorize($result);
+}
+
+=head2 needNextMove()
+
+Returns 0 or 1 depending on whether it needs to prompt for next move.
+
+=cut
+
+sub needNextMove {
+    my ($self) = @_;
+
+   return ($self->_getCurrentPlayer->type eq 'H');
+}
+
+=head2 isLastMove()
+
+Returns 0 or 1 depending on whether it is the last move.
+
+=cut
+
+sub isLastMove {
+    my ($self) = @_;
+
+   return ($self->board->availableIndex !~ /\,/);
+}
+
 =head2 isGameOver()
 
 Returns 0 or 1 depending whether the TicTacToe game is over or not.
@@ -266,30 +312,6 @@ sub isGameOver {
     return $board->isFull;
 }
 
-=head2 getResult()
-
-Returns the result message.
-
-=cut
-
-sub getResult {
-    my ($self) = @_;
-
-    my $result;
-    if ($self->has_winner) {
-        $result = $self->winner->getMessage;
-    }
-    else {
-        die "ERROR: Game is not finished yet.\n" unless $self->board->isFull;
-        $result = "<cyan><bold>Game drawn, better luck next time.</bold></cyan>\n";
-    }
-
-    $self->clear_winner;
-    $self->current('H');
-
-    return Term::ANSIColor::Markup->colorize($result);
-}
-
 =head2 isValidMove($move)
 
 Returns 0 or 1 depending on whether the given C<$move> is valid or not.
@@ -303,30 +325,6 @@ sub isValidMove {
             && ($move =~ /^\d+$/)
             && ($move >= 1) && ($move <= $self->board->getSize)
             && ($self->board->isCellEmpty($move-1)));
-}
-
-=head2 needNextMove()
-
-Returns 0 or 1 depending on whether it needs to prompt for next move.
-
-=cut
-
-sub needNextMove {
-    my ($self) = @_;
-
-   return ($self->_getCurrentPlayer->type eq 'H');
-}
-
-=head2 isLastMove()
-
-Returns 0 or 1 depending on whether it is the last move.
-
-=cut
-
-sub isLastMove {
-    my ($self) = @_;
-
-   return ($self->board->availableIndex !~ /\,/);
 }
 
 =head2 isValidSymbol($symbol)
