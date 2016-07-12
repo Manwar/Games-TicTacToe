@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 
 use 5.006;
-use strict; use warnings;
+use strict;
+use warnings FATAL => 'all';
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
@@ -11,7 +12,6 @@ WriteMakefile(
     ABSTRACT_FROM      => 'lib/Games/TicTacToe.pm',
     LICENSE            => 'artistic_2',
     EXE_FILES          => [ 'script/play-tictactoe' ],
-    PL_FILES           => {},
     MIN_PERL_VERSION   => 5.006,
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 0,
@@ -21,8 +21,8 @@ WriteMakefile(
         'Test::Warn' => 0,
     },
     PREREQ_PM => {
-        'Moo'              => 0,
-        'namespace::clean' => 0,
+        'Moo'                     => '2.000000',
+        'namespace::clean'        => '0.24',
         'Term::ANSIColor::Markup' => '0.06',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
@@ -30,17 +30,17 @@ WriteMakefile(
     (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
         'meta-spec' => { version => 2 },
         provides    => {
-            'Games::TicTacToe'         => { file => 'lib/Games/TicTacToe.pm',        version => '0.19' },
-            'Games::TicTacToe::Board'  => { file => 'lib/Games/TicTacToe/Board.pm',  version => '0.19' },
-            'Games::TicTacToe::Move'   => { file => 'lib/Games/TicTacToe/Move.pm',   version => '0.19' },
-            'Games::TicTacToe::Params' => { file => 'lib/Games/TicTacToe/Params.pm', version => '0.19' },
-            'Games::TicTacToe::Player' => { file => 'lib/Games/TicTacToe/Player.pm', version => '0.19' },
+            'Games::TicTacToe'         => { file => 'lib/Games/TicTacToe.pm',        version => '0.20' },
+            'Games::TicTacToe::Board'  => { file => 'lib/Games/TicTacToe/Board.pm',  version => '0.20' },
+            'Games::TicTacToe::Move'   => { file => 'lib/Games/TicTacToe/Move.pm',   version => '0.20' },
+            'Games::TicTacToe::Params' => { file => 'lib/Games/TicTacToe/Params.pm', version => '0.20' },
+            'Games::TicTacToe::Player' => { file => 'lib/Games/TicTacToe/Player.pm', version => '0.20' },
         },
         resources => {
             repository => {
                 type => 'git',
-                url  => 'https://github.com/Manwar/Games-TicTacToe.git',
-                web  => 'https://github.com/Manwar/Games-TicTacToe',
+                url  => 'https://github.com/manwar/Games-TicTacToe.git',
+                web  => 'https://github.com/manwar/Games-TicTacToe',
             },
         }})
      : ()

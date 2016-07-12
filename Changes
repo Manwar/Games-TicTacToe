@@ -1,4 +1,9 @@
-Revision history for Games-TicTacToe
+Revision history for Games::TicTacToe
+
+0.20    Tue Jul 12 10:00:00 2016
+        - Updated copyright year information.
+        - Addressed issue raised in the CPAN Tester Report.
+          http://www.cpantesters.org/cpan/report/eb748b3c-44ab-11e6-b8cc-7cf862f69d7e
 
 0.19    Sat May 16 20:40:00 2015
         - Fixed sample code in the section "SYNOPSIS".
