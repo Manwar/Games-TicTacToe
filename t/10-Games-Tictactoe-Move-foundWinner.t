@@ -13,6 +13,5 @@ my $tictactoe = Games::TicTacToe->new(players => [$player1, $player2]);
 
 eval { Games::TicTacToe::Move::foundWinner(); };
 like($@, qr/ERROR: Player not defined/);
-
 eval { Games::TicTacToe::Move::foundWinner($tictactoe->players); };
 like($@, qr/ERROR: Board not defined/);

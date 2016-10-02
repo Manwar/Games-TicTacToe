@@ -1,6 +1,7 @@
 package Games::TicTacToe::Params;
 
-$Games::TicTacToe::Params::VERSION = '0.20';
+$Games::TicTacToe::Params::VERSION = '0.21';
+$Games::TicTacToe::Params::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
 
@@ -8,40 +9,41 @@ Games::TicTacToe::Params - Placeholder for parameters for Games::TicTacToe.
 
 =head1 VERSION
 
-Version 0.20
+Version 0.21
 
 =cut
 
 use 5.006;
 use strict; use warnings;
 use Data::Dumper;
-use vars qw(@ISA @EXPORT @EXPORT_OK);
 
-require Exporter;
-@ISA       = qw(Exporter);
-@EXPORT_OK = qw($Board $Player $Players $Symbol $Type);
+use Type::Library -base, -declare => qw(Board Player Players Symbol Type);
+use Types::Standard qw(Str Object Defined);
+use Type::Utils;
 
-our $Board = sub {
-    die "isa check for 'board' failed.\n"
-        unless (defined $_[0] && $_[0]->isa('Games::TicTacToe::Board'));
-};
+declare 'Board',
+    as Object,
+    where   { defined $_[0] || $_[0]->isa('Games::TicTacToe::Board') },
+    message { "isa check for 'board' failed." };
 
-our $Player = sub {
-    die "isa check for 'player' failed.\n"
-        unless (defined $_[0] && $_[0] =~ /^[H|C]$/i);
-};
+declare 'Player',
+    as Str,
+    where   { (defined $_[0] && $_[0] =~ /^[H|C]$/i) },
+    message { "isa check for 'player' failed." };
 
-our $Players = sub {
-    die "isa check for 'players' failed.\n" unless (defined $_[0]);
-};
+declare 'Players',
+    as Defined,
+    message { "isa check for 'players' failed." };
 
-our $Symbol = sub {
-    die "isa check for 'symbol' failed" unless (defined $_[0] && $_[0] =~ /^[X|O]$/i);
-};
+declare 'Symbol',
+    as Str,
+    where   { (defined $_[0] && $_[0] =~ /^[X|O]$/i) },
+    message { "isa check for 'symbol' failed." };
 
-our $Type = sub {
-    die "isa check for 'type' failed" unless (defined $_[0] && $_[0] =~ /^[H|C]$/i);
-};
+declare 'Type',
+    as Str,
+    where   { (defined $_[0] && $_[0] =~ /^[H|C]$/i) },
+    message { "isa check for 'type' failed." };
 
 =head1 DESCRIPTION
 

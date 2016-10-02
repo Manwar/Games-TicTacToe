@@ -1,6 +1,7 @@
 package Games::TicTacToe::Move;
 
-$Games::TicTacToe::Move::VERSION = '0.20';
+$Games::TicTacToe::Move::VERSION = '0.21';
+$Games::TicTacToe::Move::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
 
@@ -8,7 +9,7 @@ Games::TicTacToe::Move - Interface to the TicTacToe game's move.
 
 =head1 VERSION
 
-Version 0.20
+Version 0.21
 
 =cut
 

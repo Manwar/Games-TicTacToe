@@ -24,17 +24,18 @@ WriteMakefile(
         'Moo'                     => '2.000000',
         'namespace::clean'        => '0.24',
         'Term::ANSIColor::Markup' => '0.06',
+        'Type::Tiny'              => '1.000005',
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Games-TicTacToe-*' },
     (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
         'meta-spec' => { version => 2 },
         provides    => {
-            'Games::TicTacToe'         => { file => 'lib/Games/TicTacToe.pm',        version => '0.20' },
-            'Games::TicTacToe::Board'  => { file => 'lib/Games/TicTacToe/Board.pm',  version => '0.20' },
-            'Games::TicTacToe::Move'   => { file => 'lib/Games/TicTacToe/Move.pm',   version => '0.20' },
-            'Games::TicTacToe::Params' => { file => 'lib/Games/TicTacToe/Params.pm', version => '0.20' },
-            'Games::TicTacToe::Player' => { file => 'lib/Games/TicTacToe/Player.pm', version => '0.20' },
+            'Games::TicTacToe'         => { file => 'lib/Games/TicTacToe.pm',        version => '0.21' },
+            'Games::TicTacToe::Board'  => { file => 'lib/Games/TicTacToe/Board.pm',  version => '0.21' },
+            'Games::TicTacToe::Move'   => { file => 'lib/Games/TicTacToe/Move.pm',   version => '0.21' },
+            'Games::TicTacToe::Params' => { file => 'lib/Games/TicTacToe/Params.pm', version => '0.21' },
+            'Games::TicTacToe::Player' => { file => 'lib/Games/TicTacToe/Player.pm', version => '0.21' },
         },
         resources => {
             repository => {
