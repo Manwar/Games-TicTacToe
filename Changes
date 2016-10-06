@@ -1,5 +1,9 @@
 Revision history for Games::TicTacToe
 
+0.22    Thu Oct 06 10:30:00 2016
+        - Added new attribute type 'PlayerObj'.
+        - Re-defined attribute type 'Players'.
+
 0.21    Sun Oct 02 18:35:00 2016
         - Improved type definitions for 'Board', 'Player', 'Symbol', 'Type' and 'Players'.
 

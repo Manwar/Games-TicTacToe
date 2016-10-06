@@ -1,6 +1,6 @@
 package Games::TicTacToe::Params;
 
-$Games::TicTacToe::Params::VERSION = '0.21';
+$Games::TicTacToe::Params::VERSION = '0.22';
 $Games::TicTacToe::Params::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
@@ -9,7 +9,7 @@ Games::TicTacToe::Params - Placeholder for parameters for Games::TicTacToe.
 
 =head1 VERSION
 
-Version 0.21
+Version 0.22
 
 =cut
 
@@ -17,8 +17,8 @@ use 5.006;
 use strict; use warnings;
 use Data::Dumper;
 
-use Type::Library -base, -declare => qw(Board Player Players Symbol Type);
-use Types::Standard qw(Str Object Defined);
+use Type::Library -base, -declare => qw(Board Player Players PlayerObj Symbol Type);
+use Types::Standard qw(Str Object ArrayRef);
 use Type::Utils;
 
 declare 'Board',
@@ -31,8 +31,12 @@ declare 'Player',
     where   { (defined $_[0] && $_[0] =~ /^[H|C]$/i) },
     message { "isa check for 'player' failed." };
 
+declare 'PlayerObj',
+    as Object,
+    where   { ref($_[0]) eq 'Games::TicTacToe::Player' };
+
 declare 'Players',
-    as Defined,
+    as ArrayRef[PlayerObj],
     message { "isa check for 'players' failed." };
 
 declare 'Symbol',
