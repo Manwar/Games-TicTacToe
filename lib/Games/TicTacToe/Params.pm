@@ -1,6 +1,6 @@
 package Games::TicTacToe::Params;
 
-$Games::TicTacToe::Params::VERSION = '0.22';
+$Games::TicTacToe::Params::VERSION = '0.23';
 $Games::TicTacToe::Params::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
@@ -9,7 +9,7 @@ Games::TicTacToe::Params - Placeholder for parameters for Games::TicTacToe.
 
 =head1 VERSION
 
-Version 0.22
+Version 0.23
 
 =cut
 
@@ -17,26 +17,20 @@ use 5.006;
 use strict; use warnings;
 use Data::Dumper;
 
-use Type::Library -base, -declare => qw(Board Player Players PlayerObj Symbol Type);
-use Types::Standard qw(Str Object ArrayRef);
+use Type::Library -base, -declare => qw(Board Player Players PlayerType Symbol Type);
+use Types::Standard qw(Str ArrayRef);
 use Type::Utils;
 
-declare 'Board',
-    as Object,
-    where   { defined $_[0] || $_[0]->isa('Games::TicTacToe::Board') },
-    message { "isa check for 'board' failed." };
+class_type 'Board' , { class => 'Games::TicTacToe::Board'  };
+class_type 'Player', { class => 'Games::TicTacToe::Player' };
 
-declare 'Player',
+declare 'PlayerType',
     as Str,
     where   { (defined $_[0] && $_[0] =~ /^[H|C]$/i) },
-    message { "isa check for 'player' failed." };
-
-declare 'PlayerObj',
-    as Object,
-    where   { ref($_[0]) eq 'Games::TicTacToe::Player' };
+    message { "isa check for 'PlayerType' failed." };
 
 declare 'Players',
-    as ArrayRef[PlayerObj],
+    as ArrayRef[Player],
     message { "isa check for 'players' failed." };
 
 declare 'Symbol',

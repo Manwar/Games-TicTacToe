@@ -57,8 +57,8 @@ do {
 
     } until ($tictactoe->isGameOver);
 
-    print {*STDOUT} $tictactoe->getResult;
     print {*STDOUT} $tictactoe->getGameBoard;
+    print {*STDOUT} $tictactoe->getResult;
 
     $board->reset;
 

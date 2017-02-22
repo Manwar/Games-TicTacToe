@@ -1,6 +1,6 @@
 package Games::TicTacToe::Player;
 
-$Games::TicTacToe::Player::VERSION = '0.22';
+$Games::TicTacToe::Player::VERSION = '0.23';
 $Games::TicTacToe::Player::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
@@ -9,19 +9,19 @@ Games::TicTacToe::Player - Interface to the TicTacToe game's player.
 
 =head1 VERSION
 
-Version 0.22
+Version 0.23
 
 =cut
 
 use 5.006;
 use Data::Dumper;
-use Games::TicTacToe::Params qw(Type Symbol);
+use Games::TicTacToe::Params qw(Symbol PlayerType);
 
 use Moo;
 use namespace::clean;
 
-has 'type'   => (is => 'ro', isa => Type,   default => sub { return 'H' }, required => 1);
-has 'symbol' => (is => 'ro', isa => Symbol, default => sub { return 'X' }, required => 1);
+has 'type'   => (is => 'ro', isa => PlayerType, default => sub { return 'H' }, required => 1);
+has 'symbol' => (is => 'ro', isa => Symbol,     default => sub { return 'X' }, required => 1);
 
 =head1 DESCRIPTION
 

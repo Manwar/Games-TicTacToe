@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.22';
+$Games::TicTacToe::VERSION = '0.23';
 $Games::TicTacToe::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
@@ -9,7 +9,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.22
+Version 0.23
 
 =cut
 
@@ -18,13 +18,13 @@ use Data::Dumper;
 use Games::TicTacToe::Move;
 use Games::TicTacToe::Board;
 use Games::TicTacToe::Player;
-use Games::TicTacToe::Params qw(Board Player Players);
+use Games::TicTacToe::Params qw(Board PlayerType Players);
 
 use Moo;
 use namespace::clean;
 
 has 'board'   => (is => 'rw', isa => Board);
-has 'current' => (is => 'rw', isa => Player,  default   => sub { return 'H'; });
+has 'current' => (is => 'rw', isa => PlayerType,  default   => sub { return 'H'; });
 has 'players' => (is => 'rw', isa => Players, predicate => 1);
 has 'size'    => (is => 'ro', default   => sub { return 3 });
 has 'winner'  => (is => 'rw', predicate => 1, clearer => 1);
@@ -112,8 +112,8 @@ on install is available to play with.
 
         } until ($tictactoe->isGameOver);
 
-        print {*STDOUT} $tictactoe->getResult;
         print {*STDOUT} $tictactoe->getGameBoard;
+        print {*STDOUT} $tictactoe->getResult;
 
         $board->reset;
 
