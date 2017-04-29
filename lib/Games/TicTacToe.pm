@@ -1,6 +1,6 @@
 package Games::TicTacToe;
 
-$Games::TicTacToe::VERSION = '0.23';
+$Games::TicTacToe::VERSION = '0.24';
 $Games::TicTacToe::AUTHOR  = 'cpan:MANWAR';
 
 =head1 NAME
@@ -9,7 +9,7 @@ Games::TicTacToe - Interface to the TicTacToe (nxn) game.
 
 =head1 VERSION
 
-Version 0.23
+Version 0.24
 
 =cut
 
@@ -24,7 +24,7 @@ use Moo;
 use namespace::clean;
 
 has 'board'   => (is => 'rw', isa => Board);
-has 'current' => (is => 'rw', isa => PlayerType,  default   => sub { return 'H'; });
+has 'current' => (is => 'rw', isa => PlayerType, default => sub { return 'H'; });
 has 'players' => (is => 'rw', isa => Players, predicate => 1);
 has 'size'    => (is => 'ro', default   => sub { return 3 });
 has 'winner'  => (is => 'rw', predicate => 1, clearer => 1);

@@ -1,5 +1,8 @@
 Revision history for Games::TicTacToe
 
+0.24    Sat Apr 29 10:25:00 2017
+        - Updated game script to be more user friendly.
+
 0.23    Wed Feb 22 11:00:00 2017
         - Fixed broken type definition for 'Player' and 'Board'.
 
